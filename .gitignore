@@ -1,0 +1,33 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyc
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media/
+/staticfiles/
+
+# Env / secrets
+.env
+.venv/
+venv/
+env/
+
+# Model weights (usually too large for git — track via Git LFS or external storage instead)
+*.pt
+*.pth
+*.h5
+*.onnx
+/models/weights/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -42,6 +42,9 @@ INSTALLED_APPS = [
     'detection',
     'legalmap',
     'audit',
+    'rest_framework',
+    'rest_framework.authtoken',   # <-- add this line
+    'accounts',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -145,6 +148,16 @@ MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celery — defaults to a local Redis instance. Set CELERY_TASK_ALWAYS_EAGER=1
+# to run tasks synchronously in-process (handy for local dev/testing without
+# a Redis server or separate worker process running).
+CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_ALWAYS_EAGER = os.environ.get('CELERY_TASK_ALWAYS_EAGER') == '1'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [

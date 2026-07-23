@@ -152,6 +152,30 @@ class FactCheckReference(models.Model):
     def __str__(self):
         return f"Fact-check for {self.submission_id}: {self.rating_text}"
 
+class TaggingResult(models.Model):
+    """
+    Output of the Tagging Layer: rule-based combination of what the
+    YOLOv8 object detector found (objects of interest, e.g. faces) with the
+    Synthetic Media Analysis Layer's verdict, producing a semantic tag
+    (e.g. 'identity_fraud'). LegalMapping then looks up which Philippine
+    laws a given tag_code may implicate.
+    """
+
+    submission = models.ForeignKey(
+        ImageSubmission, on_delete=models.CASCADE, related_name="tags"
+    )
+    tag_code = models.CharField(
+        max_length=50, help_text="Machine-readable code, e.g. 'identity_fraud'. Used as the LegalMapping lookup key."
+    )
+    tag_label = models.CharField(max_length=150, help_text="Human-readable label shown in the UI.")
+    rule_description = models.TextField(
+        help_text="Explains which detections triggered this tag, for auditability."
+    )
+    confidence = models.FloatField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.tag_code} ({self.submission_id})"
 
 class DetectionReport(models.Model):
     """Final aggregated report shown to the requesting agency."""

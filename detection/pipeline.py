@@ -12,6 +12,7 @@ from django.utils import timezone
 from audit.models import AuditLog
 from detection.models import ExifMetadata, FaceDetection, ForensicAnalysis, ImageSubmission
 from detection.models import (
+    DetectionReport,
     ExifMetadata,
     FaceDetection,
     ForensicAnalysis,
@@ -19,6 +20,7 @@ from detection.models import (
     TaggingResult,
 )
 from detection.services import exif_service, face_service, forensic_service, tagging_service
+from legalmap.services import mapping_service
 
 
 def _log(submission, action_type, details=None, actor=None):
@@ -105,6 +107,31 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
             submission,
             AuditLog.ActionType.TAGGING,
             {"tags": [t["tag_code"] for t in tags]},
+            actor,
+        )
+        
+        # --- Minimal auto-generated report + Law Mapping Layer ---
+        tag_summary = ", ".join(t["tag_label"] for t in tags) if tags else "No tags generated."
+        report, _ = DetectionReport.objects.update_or_create(
+            submission=submission,
+            defaults={
+                "overall_verdict": forensic_result["verdict"],
+                "confidence_score": forensic_result["manipulation_score"],
+                "summary_text": (
+                    f"Automated analysis: forensic verdict '{forensic_result['verdict']}' "
+                    f"(score {forensic_result['manipulation_score']:.3f}), "
+                    f"{len(faces)} face(s) detected. Tags: {tag_summary}"
+                ),
+                "review_status": DetectionReport.ReviewStatus.AUTO_GENERATED,
+            },
+        )
+        legal_mappings = mapping_service.apply_mappings(
+            report, [t["tag_code"] for t in tags]
+        )
+        _log(
+            submission,
+            AuditLog.ActionType.REPORT_GENERATED,
+            {"legal_provisions_mapped": [str(m.provision) for m in legal_mappings]},
             actor,
         )
         

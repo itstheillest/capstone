@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from legalmap.serializers import LegalMappingSerializer
 
 from .models import (
     DetectionReport,
@@ -88,6 +89,7 @@ class FactCheckReferenceSerializer(serializers.ModelSerializer):
 
 class DetectionReportSerializer(serializers.ModelSerializer):
     reviewed_by = serializers.StringRelatedField()
+    legal_mappings = LegalMappingSerializer(many=True, read_only=True)
 
     class Meta:
         model = DetectionReport

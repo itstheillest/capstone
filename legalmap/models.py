@@ -5,6 +5,10 @@ from detection.models import DetectionReport
 
 class LegalProvision(models.Model):
     """A specific Philippine legal provision relevant to synthetic/manipulated media."""
+    
+    class Status(models.TextChoices):
+        ENACTED = "enacted", "Enacted Law"
+        PENDING_BILL = "pending_bill", "Pending Bill (not yet law)"
 
     law_name = models.CharField(
         max_length=255, help_text="e.g. 'Cybercrime Prevention Act of 2012'"
@@ -12,6 +16,12 @@ class LegalProvision(models.Model):
     law_number = models.CharField(max_length=50, help_text="e.g. 'RA 10175'")
     section = models.CharField(max_length=50, blank=True, help_text="e.g. 'Sec. 4(b)(3)'")
     description = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.ENACTED,
+        help_text="Whether this is currently enacted law or a pending bill — do not present pending bills as current law.",
+    )
     jurisdiction = models.CharField(max_length=100, default="Philippines")
 
     class Meta:

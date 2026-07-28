@@ -1,3 +1,4 @@
+'''
 from rest_framework import serializers
 from legalmap.serializers import LegalMappingSerializer
 
@@ -157,3 +158,54 @@ class DetectionReportDetailSerializer(serializers.ModelSerializer):
             'deepfake_probability', 'legal_provisions', 'reverse_matches',
             'fact_check_references', 'created_at'
         ]
+'''
+from rest_framework import serializers
+from .models import ImageSubmission, ReverseImageMatch, FactCheckReference
+
+
+class ReverseImageMatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReverseImageMatch
+        fields = [
+            'id',
+            'page_url',
+            'domain',
+            'similarity_score',
+            'match_type',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class FactCheckReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FactCheckReference
+        fields = [
+            'id',
+            'claim_text',
+            'publisher_name',
+            'publisher_url',
+            'rating',
+            'review_date',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'created_at']
+
+
+class ImageSubmissionSerializer(serializers.ModelSerializer):
+    reverse_matches = ReverseImageMatchSerializer(many=True, read_only=True)
+    fact_check_references = FactCheckReferenceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ImageSubmission
+        fields = [
+            'id',
+            'sha256_hash',
+            'original_filename',
+            'file_size_bytes',
+            'mime_type',
+            'submitted_at',  # Updated from created_at
+            'reverse_matches',
+            'fact_check_references',
+        ]
+        read_only_fields = ['id', 'submitted_at', 'reverse_matches', 'fact_check_references']

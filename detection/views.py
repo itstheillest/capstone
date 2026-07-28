@@ -1,3 +1,4 @@
+'''
 import hashlib
 
 from rest_framework import status, viewsets
@@ -98,3 +99,38 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
         if forwarded:
             return forwarded.split(",")[0].strip()
         return request.META.get("REMOTE_ADDR")
+'''
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import ImageSubmission
+from .serializers import ImageSubmissionSerializer
+
+class ImageSubmissionViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint for managing image submissions and inspecting detection results.
+    """
+    queryset = ImageSubmission.objects.all().prefetch_related(
+        'reverse_matches', 
+        'fact_check_references'
+    ).order_by('-submitted_at')  # Updated from -created_at
+    
+    serializer_class = ImageSubmissionSerializer
+
+    @action(detail=True, methods=['post'])
+    def trigger_analysis(self, request, pk=None):
+        """
+        Custom endpoint hook to trigger asynchronous analysis.
+        Can be tested independently before hooking into your team's Celery pipeline.
+        """
+        submission = self.get_object()
+        
+        # Stub response for independent testing
+        return Response(
+            {
+                "status": "queued",
+                "message": f"Analysis initiated for submission {submission.id}.",
+                "sha256_hash": submission.sha256_hash,
+            },
+            status=status.HTTP_202_ACCEPTED
+        )

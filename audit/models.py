@@ -16,11 +16,13 @@ class AuditLog(models.Model):
         EXIF_CHECK = "exif_check", "EXIF Metadata Checked"
         FACE_DETECT = "face_detect", "Face Detection Run"
         FORENSIC_ANALYSIS = "forensic_analysis", "Forensic Analysis Run"
+        TAGGING = "tagging", "Tagging Layer Run"
         REVERSE_SEARCH = "reverse_search", "Reverse Image Search Run"
         FACT_CHECK = "fact_check", "Fact-Check Lookup Run"
         REPORT_GENERATED = "report_generated", "Report Generated"
         REPORT_REVIEWED = "report_reviewed", "Report Reviewed by Human"
         EXPORT = "export", "Report Exported"
+        
 
     submission = models.ForeignKey(
         ImageSubmission, on_delete=models.SET_NULL, null=True, related_name="audit_logs"

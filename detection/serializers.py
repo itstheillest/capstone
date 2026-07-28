@@ -11,6 +11,8 @@ from .models import (
     ReverseImageMatch,
     TaggingResult,
 )
+from rest_framework import serializers
+from detection.models import ReverseImageMatch, FactCheckReference, DetectionReport
 
 class TaggingResultSerializer(serializers.ModelSerializer):
     class Meta:
@@ -133,3 +135,25 @@ class ImageSubmissionDetailSerializer(serializers.ModelSerializer):
             "fact_checks",
             "report",
         ]   
+        
+class ReverseImageMatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReverseImageMatch
+        fields = ['id', 'page_url', 'page_title', 'image_url', 'domain', 'match_type', 'similarity_score']
+
+class FactCheckReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FactCheckReference
+        fields = ['id', 'claim_text', 'claimant', 'publisher_name', 'publisher_url', 'rating', 'review_date']
+
+class DetectionReportDetailSerializer(serializers.ModelSerializer):
+    reverse_matches = ReverseImageMatchSerializer(many=True, read_only=True)
+    fact_check_references = FactCheckReferenceSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = DetectionReport
+        fields = [
+            'id', 'file_hash', 'status', 'authentic_probability',
+            'deepfake_probability', 'legal_provisions', 'reverse_matches',
+            'fact_check_references', 'created_at'
+        ]

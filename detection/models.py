@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 def submission_upload_path(instance, filename):
@@ -121,51 +122,17 @@ class ForensicAnalysis(models.Model):
         return f"{self.verdict} ({self.manipulation_score:.2f}) - {self.submission_id}"
 
 
-class ReverseImageMatch(models.Model):
-    """A single external match found via reverse image search."""
-
-    submission = models.ForeignKey(
-        ImageSubmission, on_delete=models.CASCADE, related_name="reverse_matches"
-    )
-    source_url = models.URLField(max_length=500)
-    source_domain = models.CharField(max_length=255, blank=True)
-    match_confidence = models.FloatField(null=True, blank=True)
-    first_indexed_date = models.DateField(null=True, blank=True)
-    thumbnail_url = models.URLField(max_length=500, blank=True)
-
-    def __str__(self):
-        return f"{self.source_domain} match for {self.submission_id}"
-
-
-class FactCheckReference(models.Model):
-    """A ClaimReview result pulled from Google Fact Check Tools API."""
-
-    submission = models.ForeignKey(
-        ImageSubmission, on_delete=models.CASCADE, related_name="fact_checks"
-    )
-    claim_text = models.TextField()
-    claim_review_url = models.URLField(max_length=500)
-    publisher_name = models.CharField(max_length=255, blank=True)
-    rating_text = models.CharField(max_length=100, blank=True)
-    rating_date = models.DateField(null=True, blank=True)
-
-    def __str__(self):
-        return f"Fact-check for {self.submission_id}: {self.rating_text}"
-
 class TaggingResult(models.Model):
     """
     Output of the Tagging Layer: rule-based combination of what the
-    YOLOv8 object detector found (objects of interest, e.g. faces) with the
-    Synthetic Media Analysis Layer's verdict, producing a semantic tag
-    (e.g. 'identity_fraud'). LegalMapping then looks up which Philippine
-    laws a given tag_code may implicate.
+    YOLOv8 object detector found with the Synthetic Media Analysis Layer's verdict.
     """
 
     submission = models.ForeignKey(
         ImageSubmission, on_delete=models.CASCADE, related_name="tags"
     )
     tag_code = models.CharField(
-        max_length=50, help_text="Machine-readable code, e.g. 'identity_fraud'. Used as the LegalMapping lookup key."
+        max_length=50, help_text="Machine-readable code, e.g. 'identity_fraud'."
     )
     tag_label = models.CharField(max_length=150, help_text="Human-readable label shown in the UI.")
     rule_description = models.TextField(
@@ -176,6 +143,7 @@ class TaggingResult(models.Model):
 
     def __str__(self):
         return f"{self.tag_code} ({self.submission_id})"
+
 
 class DetectionReport(models.Model):
     """Final aggregated report shown to the requesting agency."""
@@ -203,3 +171,54 @@ class DetectionReport(models.Model):
 
     def __str__(self):
         return f"Report for {self.submission_id} ({self.review_status})"
+
+
+class ReverseImageMatch(models.Model):
+    """A single external match found via reverse image search (e.g. Google Cloud Vision API)."""
+
+    submission = models.ForeignKey(
+        ImageSubmission,
+        on_delete=models.CASCADE,
+        related_name="reverse_matches"
+    )
+    page_url = models.URLField(max_length=1024)
+    page_title = models.CharField(max_length=512, blank=True)
+    image_url = models.URLField(max_length=1024, blank=True)
+    domain = models.CharField(max_length=255)
+    similarity_score = models.FloatField(default=0.0)  # Normalized 0.0 - 1.0
+    match_type = models.CharField(
+        max_length=50,
+        choices=[
+            ("EXACT", "Exact Match"),
+            ("PARTIAL", "Partial Match"),
+            ("SIMILAR", "Visually Similar"),
+        ],
+        default="SIMILAR",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-similarity_score"]
+
+    def __str__(self):
+        return f"{self.domain} match ({self.match_type}) for {self.submission_id}"
+
+
+class FactCheckReference(models.Model):
+    """A ClaimReview result pulled from Google Fact Check Tools API."""
+
+    submission = models.ForeignKey(
+        ImageSubmission,
+        on_delete=models.CASCADE,
+        related_name="fact_check_references"
+    )
+    claim_text = models.TextField()
+    claimant = models.CharField(max_length=255, blank=True)
+    publisher_name = models.CharField(max_length=255)  # e.g., Vera Files, Rappler
+    publisher_url = models.URLField(max_length=1024)
+    rating = models.CharField(max_length=100)  # e.g., "False", "Altered", "Misleading"
+    review_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Fact-check by {self.publisher_name} for {self.submission_id}: {self.rating}"

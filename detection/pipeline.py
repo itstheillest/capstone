@@ -21,6 +21,9 @@ from detection.models import (
 )
 from detection.services import exif_service, face_service, forensic_service, tagging_service
 from legalmap.services import mapping_service
+from detection.models import ReverseImageMatch, FactCheckReference
+from detection.services.factcheck_service import FactCheckService
+from audit.models import AuditLog, ActionType
 
 
 def _log(submission, action_type, details=None, actor=None):
@@ -146,3 +149,43 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         raise
 
     return submission
+
+def process_fact_checking_layer(report, image_path: str, context_query: str = ""):
+    """
+    Executes Reverse Search and Fact-Check Lookup, saving results to DB.
+    """
+    # 1. Reverse Image Search
+    matches = FactCheckService.perform_reverse_image_search(image_path)
+    for m in matches:
+        ReverseImageMatch.objects.create(
+            report=report,
+            page_url=m["page_url"],
+            image_url=m["image_url"],
+            domain=m["domain"],
+            match_type=m["match_type"],
+            similarity_score=m["similarity_score"]
+        )
+
+    # 2. Fact Check Lookup (uses tags or extracted context as query)
+    search_query = context_query or " ".join([tag.name for tag in report.tags.all()])
+    if search_query:
+        references = FactCheckService.query_fact_check_tools(search_query)
+        for ref in references:
+            FactCheckReference.objects.create(
+                report=report,
+                claim_text=ref["claim_text"],
+                claimant=ref["claimant"],
+                publisher_name=ref["publisher_name"],
+                publisher_url=ref["publisher_url"],
+                rating=ref["rating"]
+            )
+
+    # 3. Log Audit Action
+    AuditLog.objects.create(
+        user=report.uploaded_by,
+        action_type=ActionType.FACT_CHECK if hasattr(ActionType, 'FACT_CHECK') else 'FACT_CHECK',
+        details={
+            "matches_found": len(matches),
+            "fact_checks_found": len(references) if search_query else 0
+        }
+    )

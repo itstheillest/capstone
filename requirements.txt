@@ -39,6 +39,7 @@ requests==2.32.3
 # --- Production server ---
 gunicorn==23.0.0
 
+google-cloud-vision 
 # --- NOTE on psycopg2-binary ---
 # Commented out above because pinned old versions sometimes lack a prebuilt
 # wheel for newer Python/OS combos (e.g. Python 3.13 on Windows), which makes

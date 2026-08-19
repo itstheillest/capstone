@@ -209,3 +209,22 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
         },
         actor,
     )
+
+def trigger_image_pipeline(submission_id: int, async_execution: bool = True):
+    """
+    Pipeline entry point to dispatch processing for an ImageSubmission.
+    """
+    try:
+        submission = ImageSubmission.objects.get(pk=submission_id)
+    except ImageSubmission.DoesNotExist:
+        logger.error(f"Cannot run pipeline: Submission {submission_id} not found.")
+        return False
+
+    if async_execution:
+        # Dispatch to Celery background worker after current DB transaction commits
+        transaction.on_commit(lambda: process_image_submission.delay(submission_id))
+    else:
+        # Fallback for synchronous/testing execution
+        process_image_submission(submission_id)
+
+    return True

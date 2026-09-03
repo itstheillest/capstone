@@ -2,6 +2,7 @@
 import hashlib
 
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
@@ -19,6 +20,7 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
     """
     /api/submissions/          GET (list), POST (upload)
     /api/submissions/{id}/     GET (full detail w/ nested pipeline results)
+    /api/submissions/{id}/status/ GET (lightweight status polling)
     """
 
     permission_classes = [IsAuthenticated]
@@ -83,6 +85,7 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
         from detection.tasks import process_submission_task
 
         process_submission_task.delay(str(submission.id), actor_id=str(request.user.id))
+        
         # In production this task runs on a separate worker, so `submission`
         # stays accurate. But CELERY_TASK_ALWAYS_EAGER (dev/testing) runs it
         # synchronously right here, which updates the DB row without
@@ -92,6 +95,19 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
 
         out = ImageSubmissionDetailSerializer(submission, context={"request": request})
         return Response(out.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"])
+    def status(self, request, pk=None):
+        """
+        GET /api/submissions/{id}/status/
+        Endpoint to allow frontend clients to lightweight-poll pipeline completion.
+        """
+        submission = self.get_object()
+        return Response({
+            "id": str(submission.id),
+            "status": submission.status,
+            "processed_at": submission.processed_at,
+        }, status=status.HTTP_200_OK)
 
     @staticmethod
     def _client_ip(request):

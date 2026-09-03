@@ -8,6 +8,7 @@ FAILED with the error logged.
 
 import logging
 from django.utils import timezone
+from django.db import transaction
 
 from audit.models import AuditLog
 from detection.models import (
@@ -20,12 +21,8 @@ from detection.models import (
     ReverseImageMatch,
     TaggingResult,
 )
-from detection.services import (
-    exif_service,
-    face_service,
-    forensic_service,
-    tagging_service,
-)
+
+from detection.services import exif_service, face_service, forensic_service, tagging_service
 from detection.services.factcheck_service import FactCheckService
 from legalmap.services import mapping_service
 
@@ -221,10 +218,13 @@ def trigger_image_pipeline(submission_id: int, async_execution: bool = True):
         return False
 
     if async_execution:
-        # Dispatch to Celery background worker after current DB transaction commits
-        transaction.on_commit(lambda: process_image_submission.delay(submission_id))
+        # Import locally inside the block to prevent circular imports
+        from detection.tasks import process_submission_task
+        
+        transaction.on_commit(lambda: process_submission_task.delay(str(submission_id)))
     else:
-        # Fallback for synchronous/testing execution
-        process_image_submission(submission_id)
+        from detection.tasks import process_submission_task
+        
+        process_submission_task(str(submission_id))
 
     return True

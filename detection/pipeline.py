@@ -207,7 +207,8 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
         actor,
     )
 
-def trigger_image_pipeline(submission_id: int, async_execution: bool = True):
+
+def trigger_image_pipeline(submission_id: str, async_execution: bool = True):
     """
     Pipeline entry point to dispatch processing for an ImageSubmission.
     """
@@ -218,13 +219,9 @@ def trigger_image_pipeline(submission_id: int, async_execution: bool = True):
         return False
 
     if async_execution:
-        # Import locally inside the block to prevent circular imports
         from detection.tasks import process_submission_task
-        
         transaction.on_commit(lambda: process_submission_task.delay(str(submission_id)))
     else:
-        from detection.tasks import process_submission_task
-        
-        process_submission_task(str(submission_id))
+        process_submission(str(submission_id))
 
     return True

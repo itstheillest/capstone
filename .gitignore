@@ -35,8 +35,3 @@ Thumbs.db
 # Ignore local environment variables and credentials
 .env
 pixifai-4ea9b6136cf4.json
-
-#docker
-docker-compose.yml
-Dockerfile
-startingDocker.txt

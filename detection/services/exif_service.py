@@ -10,6 +10,7 @@ step.
 
 import shutil
 from datetime import datetime
+from PIL.TiffImagePlugin import IFDRational
 
 KNOWN_EDITOR_TAGS = [
     "photoshop",
@@ -22,6 +23,25 @@ KNOWN_EDITOR_TAGS = [
     "faceapp",
     "picsart",
 ]
+
+
+def _sanitize_value(value):
+    """
+    Recursively converts EXIF metadata values (such as IFDRational, bytes, or tuples)
+    into standard JSON-serializable Python primitives.
+    """
+    if isinstance(value, dict):
+        return {str(k): _sanitize_value(v) for k, v in value.items()}
+    elif isinstance(value, (list, tuple)):
+        return [_sanitize_value(v) for v in value]
+    elif isinstance(value, IFDRational):
+        return float(value) if value.denominator != 0 else 0.0
+    elif isinstance(value, bytes):
+        return value.decode("utf-8", errors="ignore")
+    elif isinstance(value, (int, float, str, bool)) or value is None:
+        return value
+    else:
+        return str(value)
 
 
 def _parse_exif_datetime(value):
@@ -69,9 +89,14 @@ def run_exiftool(image_path: str) -> dict:
 def run_pillow_fallback(image_path: str) -> dict:
     from PIL import ExifTags, Image
 
-    with Image.open(image_path) as img:
-        raw = img.getexif()
-        return {ExifTags.TAGS.get(k, str(k)): v for k, v in raw.items()}
+    try:
+        with Image.open(image_path) as img:
+            raw = img.getexif()
+            if not raw:
+                return {}
+            return {ExifTags.TAGS.get(k, str(k)): v for k, v in raw.items()}
+    except Exception:
+        return {}
 
 
 def extract_exif(image_path: str) -> dict:
@@ -87,6 +112,9 @@ def extract_exif(image_path: str) -> dict:
     else:
         raw_exif = run_pillow_fallback(image_path)
 
+    # Sanitize dictionary values to ensure full JSON serializability
+    raw_exif = _sanitize_value(raw_exif)
+
     camera_make = raw_exif.get("EXIF:Make") or raw_exif.get("Make", "") or ""
     camera_model = raw_exif.get("EXIF:Model") or raw_exif.get("Model", "") or ""
     software_tag = raw_exif.get("EXIF:Software") or raw_exif.get("Software", "") or ""
@@ -94,7 +122,7 @@ def extract_exif(image_path: str) -> dict:
     gps_lat = raw_exif.get("EXIF:GPSLatitude") or raw_exif.get("GPSLatitude")
     gps_lon = raw_exif.get("EXIF:GPSLongitude") or raw_exif.get("GPSLongitude")
 
-    has_discrepancy, notes = _analyze_discrepancies(raw_exif, software_tag)
+    has_discrepancy, notes = _analyze_discrepancies(raw_exif, str(software_tag))
 
     return {
         "raw_exif": raw_exif,

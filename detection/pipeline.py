@@ -103,18 +103,13 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         # --- 4. Tagging Layer ---
         TaggingResult.objects.filter(submission=submission).delete()
         tags = tagging_service.generate_tags(
+            image_path=image_path,  # <--- Pass image_path here
             face_count=len(faces),
             verdict=forensic_result["verdict"],
             manipulation_score=forensic_result["manipulation_score"],
         )
         for tag in tags:
             TaggingResult.objects.create(submission=submission, **tag)
-        _log(
-            submission,
-            AuditLog.ActionType.TAGGING,
-            {"tags": [t["tag_code"] for t in tags]},
-            actor,
-        )
 
         # --- 5. Report & Law Mapping Layer ---
         tag_summary = ", ".join(t["tag_label"] for t in tags) if tags else "No tags generated."

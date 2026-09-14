@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PixifAI Pipeline Test Bench</title>
+  <style>
+    body { font-family: monospace; max-width: 900px; margin: 20px auto; padding: 0 10px; line-height: 1.4; }
+    section { border: 1px solid #333; padding: 15px; margin-bottom: 20px; background: #fafafa; }
+    h2 { margin-top: 0; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    label { display: block; margin-top: 8px; font-weight: bold; }
+    input, button { margin-top: 4px; padding: 6px; }
+    button { cursor: pointer; background: #e0e0e0; border: 1px solid #888; }
+    button:hover { background: #ccc; }
+    pre { background: #1e1e1e; color: #00ff00; padding: 10px; overflow-x: auto; max-height: 250px; font-size: 12px; }
+    .badge { display: inline-block; padding: 2px 6px; background: #eee; border: 1px solid #ccc; margin-right: 5px; margin-bottom: 5px; }
+    .status-running { color: orange; font-weight: bold; }
+    .status-success { color: green; font-weight: bold; }
+    .status-failed { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>PixifAI - Backend Functional Test Bench</h1>
+  <p>Status: <span id="auth-indicator" class="status-failed">Unauthenticated</span> | API Docs: <a href="/api/docs/" target="_blank">Swagger UI</a></p>
+
+  <!-- STEP 1: AUTHENTICATION -->
+  <section>
+    <h2>1. Authentication</h2>
+    <div class="grid">
+      <div>
+        <form id="login-form">
+          <label>Username:</label>
+          <input type="text" id="username" required value="admin">
+          <label>Password:</label>
+          <input type="password" id="password" required>
+          <br>
+          <button type="submit">Get JWT Tokens</button>
+          <button type="button" id="logout-btn">Logout</button>
+        </form>
+      </div>
+      <div>
+        <pre id="auth-log">// Auth output will appear here</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 2: PIPELINE UPLOAD & EXECUTION -->
+  <section>
+    <h2>2. Image Pipeline Submission</h2>
+    <form id="upload-form">
+      <label>Select Image File:</label>
+      <input type="file" id="image-input" accept="image/*" required>
+      <button type="submit">Upload & Execute Pipeline</button>
+    </form>
+    <p>Pipeline Status: <span id="pipeline-status">Idle</span></p>
+  </section>
+
+  <!-- STEP 3: PIPELINE OUTPUT DISPLAY -->
+  <section>
+    <h2>3. Pipeline Results Analysis</h2>
+    <div id="results-container">
+      <p><i>No active submission processed yet. Upload an image above.</i></p>
+    </div>
+    <label>Raw API Response Payload:</label>
+    <pre id="raw-log">// Raw JSON payload will render here</pre>
+  </section>
+
+  <script>
+    const API_BASE = '/api';
+
+    // Auth Utilities
+    const getToken = () => localStorage.getItem('access_token');
+    const setTokens = (acc, ref) => {
+      localStorage.setItem('access_token', acc);
+      localStorage.setItem('refresh_token', ref);
+      updateAuthStatus();
+    };
+    const clearTokens = () => {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      updateAuthStatus();
+    };
+
+    function updateAuthStatus() {
+      const el = document.getElementById('auth-indicator');
+      if (getToken()) {
+        el.innerText = 'Authenticated';
+        el.className = 'status-success';
+      } else {
+        el.innerText = 'Unauthenticated';
+        el.className = 'status-failed';
+      }
+    }
+
+    // 1. JWT Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/token/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        document.getElementById('auth-log').innerText = JSON.stringify(data, null, 2);
+
+        if (res.ok) {
+          setTokens(data.access, data.refresh);
+        }
+      } catch (err) {
+        document.getElementById('auth-log').innerText = err.toString();
+      }
+    });
+
+    document.getElementById('logout-btn').addEventListener('click', clearTokens);
+
+    // 2. File Submission and Task Polling
+    document.getElementById('upload-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('image-input');
+      const statusEl = document.getElementById('pipeline-status');
+      
+      if (!fileInput.files[0]) return;
+
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+
+      statusEl.className = 'status-running';
+      statusEl.innerText = 'Uploading...';
+
+      const headers = {};
+      if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
+
+      try {
+        // Upload image to Django API
+        const res = await fetch(`${API_BASE}/submissions/`, {
+          method: 'POST',
+          headers: headers,
+          body: formData
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          statusEl.className = 'status-failed';
+          statusEl.innerText = 'Upload Failed';
+          document.getElementById('raw-log').innerText = JSON.stringify(data, null, 2);
+          return;
+        }
+
+        statusEl.innerText = `Uploaded (ID: ${data.id}). Polling Celery processing status...`;
+        pollTaskStatus(data.id);
+
+      } catch (err) {
+        statusEl.className = 'status-failed';
+        statusEl.innerText = 'Error: ' + err.toString();
+      }
+    });
+
+    // 3. Poll Submission Status until Celery Finishes
+    async function pollTaskStatus(submissionId) {
+      const statusEl = document.getElementById('pipeline-status');
+      const headers = {};
+      if (getToken()) headers['Authorization'] = `Bearer ${getToken()}`;
+
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetch(`${API_BASE}/submissions/${submissionId}/`, { headers });
+          const data = await res.json();
+          document.getElementById('raw-log').innerText = JSON.stringify(data, null, 2);
+
+          // Assuming status field in model (e.g., PENDING, PROCESSING, SUCCESS, FAILED)
+          const state = data.status || 'PROCESSING';
+          statusEl.innerText = `Celery State: ${state}`;
+
+          if (state === 'SUCCESS' || state === 'COMPLETED' || data.is_processed) {
+            clearInterval(interval);
+            statusEl.className = 'status-success';
+            statusEl.innerText = 'Processing Complete!';
+            renderPipelineOutput(data);
+          } else if (state === 'FAILED' || state === 'FAILURE') {
+            clearInterval(interval);
+            statusEl.className = 'status-failed';
+            statusEl.innerText = 'Processing Failed in Celery worker.';
+          }
+        } catch (err) {
+          clearInterval(interval);
+          statusEl.className = 'status-failed';
+          statusEl.innerText = 'Polling Error: ' + err.toString();
+        }
+      }, 2000);
+    }
+
+    // 4. Render Parsed Services Output
+    function renderPipelineOutput(data) {
+      const container = document.getElementById('results-container');
+      
+      let html = `<div>`;
+      if (data.image) {
+        html += `<p><strong>Uploaded Image:</strong><br><img src="${data.image}" style="max-width:300px; border:1px solid #ccc;"></p>`;
+      }
+
+      // EXIF Service
+      html += `<h3>EXIF Metadata</h3>`;
+      if (data.exif_data && Object.keys(data.exif_data).length > 0) {
+        html += `<pre>${JSON.stringify(data.exif_data, null, 2)}</pre>`;
+      } else {
+        html += `<p>No EXIF data detected.</p>`;
+      }
+
+      // Face Service
+      html += `<h3>Face Service</h3>`;
+      html += `<p>Faces Detected: <strong>${data.face_count || (data.faces ? data.faces.length : 0)}</strong></p>`;
+
+      // Forensic Service
+      html += `<h3>Forensic Analysis</h3>`;
+      if (data.forensic_results) {
+        html += `<pre>${JSON.stringify(data.forensic_results, null, 2)}</pre>`;
+      } else {
+        html += `<p>No forensic flags generated.</p>`;
+      }
+
+      // Tagging Service
+      html += `<h3>Tags</h3>`;
+      if (data.tags && data.tags.length > 0) {
+        data.tags.forEach(tag => {
+          html += `<span class="badge">${tag}</span>`;
+        });
+      } else {
+        html += `<p>No tags generated.</p>`;
+      }
+
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    // Initialize Auth state check
+    updateAuthStatus();
+  </script>
+</body>
+</html>

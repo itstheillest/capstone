@@ -21,6 +21,7 @@ class DetectionReportSerializer(serializers.ModelSerializer):
 
 
 class ImageSubmissionSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(required=True)
     reverse_matches = ReverseImageMatchSerializer(many=True, read_only=True)
     fact_check_references = FactCheckReferenceSerializer(many=True, read_only=True)
     report = DetectionReportSerializer(read_only=True)

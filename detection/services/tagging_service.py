@@ -11,7 +11,40 @@ directly. tag_code is the lookup key the Law Mapping Layer (legalmap app)
 uses to find relevant Philippine legal provisions — keep codes stable once
 you start seeding LegalMapping rows against them.
 """
+from ultralytics import YOLO
+from PIL import Image
 
+# Model loads ONCE when worker process initializes
+_yolo_model = None
+
+def get_yolo_model():
+    global _yolo_model
+    if _yolo_model is None:
+        from ultralytics import YOLO
+        _yolo_model = YOLO("yolov8n.pt")
+    return _yolo_model
+
+def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manipulation_score: float = 0.0) -> list[dict]:
+    yolo = get_yolo_model()
+    results = yolo(image_path, conf=0.4)
+    tags = []
+    seen = set()
+
+    for result in results:
+        for box in result.boxes:
+            class_id = int(box.cls[0])
+            label = result.names[class_id]
+            confidence = float(box.conf[0])
+
+            if label not in seen:
+                seen.add(label)
+                tags.append({
+                    "tag_code": label.lower().replace(" ", "_"),
+                    "tag_label": label.capitalize(),
+                    "confidence": round(confidence, 4),
+                })
+
+    return tags
 
 def _rule_identity_fraud(face_count: int, verdict: str, manipulation_score: float):
     if face_count > 0 and verdict == "manipulated":
@@ -79,15 +112,3 @@ RULES = [
     _rule_authentic,
 ]
 
-
-def generate_tags(face_count: int, verdict: str, manipulation_score: float) -> list[dict]:
-    """
-    Returns a list of dicts ready to populate TaggingResult:
-    tag_code, tag_label, rule_description, confidence.
-    """
-    tags = []
-    for rule in RULES:
-        result = rule(face_count, verdict, manipulation_score)
-        if result:
-            tags.append(result)
-    return tags

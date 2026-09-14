@@ -17,7 +17,7 @@ services:
 
   web:
     build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --noreload"
     volumes:
       - .:/app
     ports:
@@ -36,10 +36,13 @@ services:
 
   celery:
     build: .
-    command: celery -A pixifai worker -l info
+    command: celery -A pixifai worker -l info --concurrency=2
     volumes:
       - .:/app
     environment:
+      - OMP_NUM_THREADS=1
+      - MKL_NUM_THREADS=1
+      - OPENBLAS_NUM_THREADS=1
       - USE_POSTGRES=1
       - POSTGRES_HOST=db
       - POSTGRES_DB=pixifai

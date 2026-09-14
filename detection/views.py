@@ -1,8 +1,8 @@
 import hashlib
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
-
+from drf_spectacular.utils import extend_schema, inline_serializer
 from .models import ImageSubmission
 from .serializers import ImageSubmissionSerializer
 from .tasks import process_submission_task
@@ -12,7 +12,17 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
     queryset = ImageSubmission.objects.all().order_by("-submitted_at")
     serializer_class = ImageSubmissionSerializer
     parser_classes = [MultiPartParser, FormParser]
-
+    
+    @extend_schema(
+        request={
+            'multipart/form-data': inline_serializer(
+                name='ImageUploadRequest',
+                fields={
+                    'image': serializers.FileField(),
+                }
+            )
+        }
+    )
     def create(self, request, *args, **kwargs):
         uploaded_file = request.FILES.get("image")
         if not uploaded_file:

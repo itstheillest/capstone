@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-zinc-50 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixifAI — Visual Evidence Verification</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            border: '#e4e4e7',
+            background: '#ffffff',
+            foreground: '#09090b',
+            muted: { DEFAULT: '#f4f4f5', foreground: '#71717a' },
+            accent: { DEFAULT: '#f4f4f5', foreground: '#18181b' },
+            primary: { DEFAULT: '#18181b', foreground: '#fafafa' },
+            danger: { DEFAULT: '#ef4444', foreground: '#ffffff' },
+            warning: { DEFAULT: '#f59e0b', foreground: '#ffffff' },
+            success: { DEFAULT: '#10b981', foreground: '#ffffff' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+    body { font-family: 'Geist', sans-serif; }
+    .font-mono { font-family: 'Geist Mono', monospace; }
+  </style>
+</head>
+<body class="h-full flex flex-col text-zinc-900 selection:bg-zinc-900 selection:text-white">
+
+  <!-- ================= TOP NAVIGATION / HEADER ================= -->
+  <header class="border-b border-zinc-200 bg-white sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+      <div class="flex items-center space-x-6">
+        <div class="flex items-center space-x-2">
+          <div class="h-7 w-7 rounded-md bg-zinc-900 text-white flex items-center justify-center font-bold text-sm tracking-wider">
+            Ψ
+          </div>
+          <span class="font-bold text-sm tracking-tight text-zinc-900">PixifAI</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 border border-zinc-200 font-medium">Santa Rosa CIO</span>
+        </div>
+        <nav class="hidden md:flex space-x-1 text-xs font-medium">
+          <a href="#" class="px-3 py-1.5 rounded-md bg-zinc-100 text-zinc-900 font-semibold">Dashboard</a>
+          <a href="/admin/audit/auditlog/" target="_blank" class="px-3 py-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition">Logs</a>
+          <a href="/api/docs/" target="_blank" class="px-3 py-1.5 rounded-md text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 transition flex items-center gap-1">
+            Docs <i data-lucide="external-link" class="w-3 h-3"></i>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Auth Pill -->
+      <div class="flex items-center space-x-3 text-xs">
+        <div id="auth-status-pill" class="flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+          <span id="auth-status-text">Unauthenticated</span>
+        </div>
+        <button id="auth-modal-btn" class="px-3 py-1.5 rounded-md border border-zinc-200 hover:bg-zinc-50 font-medium text-zinc-700 transition">
+          Sign In
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN CONTENT CONTAINER ================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+    <!-- Page Title -->
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight text-zinc-900">Verify Visual Evidence</h1>
+      <p class="text-sm text-zinc-500 mt-1">Upload digital images to process through multi-stage forensic analysis, facial biometrics, and Philippine statutory mapping.</p>
+    </div>
+
+    <!-- ================= STAGE 1: UPLOAD AREA ================= -->
+    <div id="upload-panel" class="bg-white border border-zinc-200 rounded-xl p-8 transition shadow-sm">
+      <div id="drop-zone" class="border-2 border-dashed border-zinc-300 hover:border-zinc-400 rounded-lg p-10 flex flex-col items-center justify-center cursor-pointer transition bg-zinc-50/50 hover:bg-zinc-50">
+        <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" class="hidden">
+        <div class="h-12 w-12 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-600 mb-3 border border-zinc-200">
+          <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+        </div>
+        <div class="text-center space-y-1">
+          <p class="text-sm font-medium text-zinc-900">
+            <span class="text-zinc-900 font-semibold underline decoration-zinc-400 underline-offset-2">Browse Files</span> or drag and drop images here
+          </p>
+          <p class="text-xs text-zinc-500">Supported Formats: PNG, JPG, WEBP (Max 10 MB)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= STAGE 2: PROCESSING & PIPELINE STATUS ================= -->
+    <div id="processing-panel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+      
+      <!-- Preview Card Left -->
+      <div class="lg:col-span-5 bg-white border border-zinc-200 rounded-xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
+            Analyzing Media...
+          </span>
+          <span id="proc-file-size" class="text-xs text-zinc-500 font-mono">-- MB</span>
+        </div>
+
+        <div class="relative aspect-video rounded-lg overflow-hidden border border-zinc-200 bg-zinc-900 flex items-center justify-center">
+          <img id="proc-preview-img" src="" alt="Submission Preview" class="w-full h-full object-contain blur-sm transition-all duration-700">
+        </div>
+
+        <div class="bg-zinc-50 rounded-lg p-3 border border-zinc-200 flex items-center justify-between">
+          <div class="flex items-center space-x-2 truncate">
+            <i data-lucide="image" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+            <span id="proc-filename" class="text-xs font-medium text-zinc-700 truncate">Filename.png</span>
+          </div>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-zinc-200 text-zinc-700">In Queue</span>
+        </div>
+      </div>
+
+      <!-- Pipeline Checklist & Terminal Right -->
+      <div class="lg:col-span-7 space-y-4">
+        <div class="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm space-y-5">
+          <div>
+            <h2 class="text-lg font-semibold tracking-tight text-zinc-900">Analysis Pipeline</h2>
+            <div class="flex justify-between items-center text-xs text-zinc-500 mt-2">
+              <span id="pipeline-percent-label">Processing modules... 20% completed.</span>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-zinc-100 rounded-full h-2 mt-2 overflow-hidden border border-zinc-200">
+              <div id="pipeline-progress-bar" class="bg-zinc-900 h-2 rounded-full transition-all duration-500" style="width: 20%"></div>
+            </div>
+          </div>
+
+          <!-- Module Steps -->
+          <div class="space-y-3 pt-2">
+            <div id="step-exif" class="flex items-center text-xs font-medium text-zinc-700 space-x-3">
+              <div class="step-icon w-5 h-5 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-400">
+                <i data-lucide="circle" class="w-3 h-3"></i>
+              </div>
+              <span>Metadata & Provenance Extraction (ExifTool)</span>
+            </div>
+            <div id="step-face" class="flex items-center text-xs font-medium text-zinc-400 space-x-3">
+              <div class="step-icon w-5 h-5 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-400">
+                <i data-lucide="circle" class="w-3 h-3"></i>
+              </div>
+              <span>Object & Face Detection (YOLOv8)</span>
+            </div>
+            <div id="step-forensics" class="flex items-center text-xs font-medium text-zinc-400 space-x-3">
+              <div class="step-icon w-5 h-5 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-400">
+                <i data-lucide="circle" class="w-3 h-3"></i>
+              </div>
+              <span>Forensic CNN & Error Level Analysis (ELA)</span>
+            </div>
+            <div id="step-legal" class="flex items-center text-xs font-medium text-zinc-400 space-x-3">
+              <div class="step-icon w-5 h-5 rounded-full border border-zinc-300 flex items-center justify-center text-zinc-400">
+                <i data-lucide="circle" class="w-3 h-3"></i>
+              </div>
+              <span>Philippine Statutory Mapping & Tagging Layer</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Terminal Stream -->
+        <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-4 shadow-inner">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live System Logs
+            </span>
+            <span class="text-[10px] font-mono text-zinc-500">STDOUT / DRF TASK ENGINE</span>
+          </div>
+          <div id="log-terminal" class="font-mono text-xs text-zinc-300 space-y-1 max-h-40 overflow-y-auto">
+            <div class="text-zinc-500">// Connected to Celery task bus...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= STAGE 3: FORENSIC VERDICT DASHBOARD ================= -->
+    <div id="results-panel" class="hidden space-y-6">
+
+      <div class="flex items-center justify-between">
+        <button id="reset-btn" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md border border-zinc-300 hover:bg-zinc-100 transition">
+          <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Process Another Image
+        </button>
+        <button id="export-json-btn" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 transition">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i> Export Process Trail (JSON)
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Column Left: Image Preview & Tag Badges -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-white border border-zinc-200 rounded-xl p-4 shadow-sm space-y-3">
+            <div class="relative rounded-lg overflow-hidden border border-zinc-200 bg-zinc-950 flex items-center justify-center">
+              <img id="res-image" src="" alt="Analyzed Media" class="w-full h-full object-contain max-h-[420px]">
+              <div id="face-tag-badge" class="absolute top-3 left-3 hidden">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500 text-white shadow-md">
+                  <i data-lucide="scan-face" class="w-3.5 h-3.5"></i>
+                  <span id="face-count-text">1 Face Detected</span>
+                </span>
+              </div>
+            </div>
+
+            <div class="bg-zinc-50 p-3 rounded-lg border border-zinc-200 flex items-center justify-between text-xs font-mono">
+              <span id="res-filename" class="text-zinc-700 truncate max-w-[200px]">file.png</span>
+              <span id="res-filesize" class="text-zinc-500">0.0 MB</span>
+            </div>
+
+            <!-- EXIF Key Indicators -->
+            <div class="space-y-2 text-xs pt-1">
+              <div class="flex items-center justify-between p-2.5 rounded-md bg-zinc-50 border border-zinc-200">
+                <span class="text-zinc-500">Provenance / EXIF:</span>
+                <span id="res-provenance-status" class="font-medium text-red-600">Modified / Discrepant</span>
+              </div>
+              <div class="flex items-center justify-between p-2.5 rounded-md bg-zinc-50 border border-zinc-200">
+                <span class="text-zinc-500">Software / Camera Tag:</span>
+                <span id="res-software-tag" class="font-medium text-zinc-800">None detected</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column Right: Classification & Legal Framework -->
+        <div class="lg:col-span-7 space-y-4">
+          
+          <!-- Verdict Card -->
+          <div id="verdict-banner" class="border rounded-xl p-6 shadow-sm bg-red-50/60 border-red-200 text-red-950 space-y-3">
+            <div class="flex items-center justify-between">
+              <span id="verdict-title" class="text-xs uppercase tracking-widest font-bold px-2.5 py-1 rounded-md bg-red-100 text-red-800 border border-red-300">
+                SYNTHETIC / DEEPFAKE DETECTED
+              </span>
+              <span id="verdict-score-badge" class="font-mono text-xs font-bold text-red-700">Manipulation Score: 0.94</span>
+            </div>
+            <div>
+              <h2 id="verdict-summary" class="text-xl font-bold tracking-tight">Identity Fraud / Profile Misrepresentation</h2>
+              <p id="verdict-detail" class="text-xs text-red-800 mt-1 leading-relaxed">
+                Combination of detected facial biometrics and high forensic anomaly indicators suggests synthetic generation or face swapping.
+              </p>
+            </div>
+          </div>
+
+          <!-- Mapped Philippine Legal Provisions -->
+          <div class="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="scale" class="w-4 h-4 text-zinc-900"></i>
+                <h3 class="text-sm font-bold text-zinc-900">Philippine Statutory Framework</h3>
+              </div>
+              <span class="text-[11px] text-zinc-400">Jurisdiction: Philippines</span>
+            </div>
+
+            <div id="legal-provisions-list" class="space-y-3">
+              <!-- Dynamically Populated Law Cards -->
+              <div class="border border-zinc-200 rounded-lg p-3 bg-zinc-50/50 space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold text-xs text-zinc-900">RA 10175 — Sec. 4(b)(3)</span>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">Enacted Law</span>
+                </div>
+                <p class="text-xs text-zinc-600">Computer-related Identity Theft: Intentional acquisition, use, or alteration of identifying data without right.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reverse Image Matches / Fact-Checks Accordion -->
+          <div class="bg-white border border-zinc-200 rounded-xl p-6 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <i data-lucide="globe" class="w-4 h-4 text-zinc-900"></i>
+                <h3 class="text-sm font-bold text-zinc-900">External Web Intelligence & Fact Checks</h3>
+              </div>
+              <span id="match-count-badge" class="text-xs font-mono text-zinc-500">0 matches</span>
+            </div>
+            <div id="web-matches-list" class="space-y-2 text-xs">
+              <p class="text-zinc-500 italic">No external matches or published fact-checks found for this media asset.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================= AUTH MODAL (SHADCN STYLE) ================= -->
+  <div id="auth-modal" class="fixed inset-0 bg-zinc-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-zinc-200 rounded-xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base text-zinc-900">Sign in to PixifAI</h3>
+          <p class="text-xs text-zinc-500 mt-0.5">Enter your analyst credentials</p>
+        </div>
+        <button id="close-auth-modal" class="text-zinc-400 hover:text-zinc-700">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="jwt-login-form" class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-zinc-700 mb-1">Username / Badge No.</label>
+          <input type="text" id="login-username" required value="admin" class="w-full text-xs px-3 py-2 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-900">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-zinc-700 mb-1">Password</label>
+          <input type="password" id="login-password" required class="w-full text-xs px-3 py-2 rounded-md border border-zinc-300 focus:outline-none focus:ring-2 focus:ring-zinc-900">
+        </div>
+        <div id="auth-error-msg" class="text-xs text-red-600 hidden"></div>
+        <button type="submit" class="w-full py-2 bg-zinc-900 text-white rounded-md text-xs font-medium hover:bg-zinc-800 transition">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="border-t border-zinc-200 bg-white py-4 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-xs text-zinc-500 flex justify-between items-center">
+      <span>PixifAI Forensic Engine v1.0.0 — Calabarzon Regional CIO</span>
+      <div class="flex space-x-4">
+        <a href="/api/docs/" target="_blank" class="hover:underline">Swagger UI</a>
+        <a href="/admin/" target="_blank" class="hover:underline">Django Admin</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= LOGIC & API INTERACTION ================= -->
+  <script>
+    lucide.createIcons();
+
+    const API_BASE = '/api';
+    let currentSubmissionData = null;
+
+    // --- Auth Management ---
+    const getAccessToken = () => localStorage.getItem('access_token');
+    const setTokens = (acc, ref) => {
+      localStorage.setItem('access_token', acc);
+      localStorage.setItem('refresh_token', ref);
+      renderAuthState();
+    };
+    const clearTokens = () => {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      renderAuthState();
+    };
+
+    function renderAuthState() {
+      const token = getAccessToken();
+      const pill = document.getElementById('auth-status-pill');
+      const text = document.getElementById('auth-status-text');
+      const btn = document.getElementById('auth-modal-btn');
+
+      if (token) {
+        pill.className = 'flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium';
+        pill.firstElementChild.className = 'w-1.5 h-1.5 rounded-full bg-emerald-500';
+        text.innerText = 'Analyst Active';
+        btn.innerText = 'Sign Out';
+        btn.onclick = clearTokens;
+      } else {
+        pill.className = 'flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium';
+        pill.firstElementChild.className = 'w-1.5 h-1.5 rounded-full bg-amber-500';
+        text.innerText = 'Unauthenticated';
+        btn.innerText = 'Sign In';
+        btn.onclick = () => document.getElementById('auth-modal').classList.remove('hidden');
+      }
+    }
+
+    // Modal Events
+    document.getElementById('close-auth-modal').onclick = () => {
+      document.getElementById('auth-modal').classList.add('hidden');
+    };
+
+    document.getElementById('jwt-login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value;
+      const p = document.getElementById('login-password').value;
+      const err = document.getElementById('auth-error-msg');
+      err.classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API_BASE}/token/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          setTokens(data.access, data.refresh);
+          document.getElementById('auth-modal').classList.add('hidden');
+        } else {
+          err.innerText = data.detail || 'Authentication failed.';
+          err.classList.remove('hidden');
+        }
+      } catch (e) {
+        err.innerText = 'Network error connecting to auth service.';
+        err.classList.remove('hidden');
+      }
+    };
+
+    // --- Logging Helper ---
+    function appendTerminalLog(message, type = 'info') {
+      const terminal = document.getElementById('log-terminal');
+      const row = document.createElement('div');
+      const time = new Date().toLocaleTimeString();
+
+      if (type === 'success') {
+        row.innerHTML = `<span class="text-zinc-500">[${time}]</span> <span class="text-emerald-400 font-semibold">[SUCCESS]</span> ${message}`;
+      } else if (type === 'error') {
+        row.innerHTML = `<span class="text-zinc-500">[${time}]</span> <span class="text-red-400 font-semibold">[ERROR]</span> ${message}`;
+      } else {
+        row.innerHTML = `<span class="text-zinc-500">[${time}]</span> <span class="text-blue-400">[INFO]</span> ${message}`;
+      }
+      terminal.appendChild(row);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    // --- Drag and Drop / Upload Handling ---
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.onclick = () => fileInput.click();
+    dropZone.ondragover = (e) => { e.preventDefault(); dropZone.classList.add('border-zinc-500'); };
+    dropZone.ondragleave = () => dropZone.classList.remove('border-zinc-500');
+    dropZone.ondrop = (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-zinc-500');
+      if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+    };
+    fileInput.onchange = (e) => {
+      if (e.target.files.length) handleFileUpload(e.target.files[0]);
+    };
+
+    async function handleFileUpload(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please choose an image file (PNG, JPG, WEBP).');
+        return;
+      }
+
+      // Switch panels: Hide Upload, Show Processing
+      document.getElementById('upload-panel').classList.add('hidden');
+      document.getElementById('processing-panel').classList.remove('hidden');
+      document.getElementById('results-panel').classList.add('hidden');
+
+      // Populate processing placeholders
+      document.getElementById('proc-filename').innerText = file.name;
+      document.getElementById('proc-file-size').innerText = `${(file.size / (1024 * 1024)).toFixed(2)} MB`;
+      const previewUrl = URL.createObjectURL(file);
+      document.getElementById('proc-preview-img').src = previewUrl;
+
+      appendTerminalLog(`Initiating upload for ${file.name} (${(file.size / 1024).toFixed(1)} KB)...`);
+
+      // Prepare request payload
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const headers = {};
+      const token = getAccessToken();
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      try {
+        const response = await fetch(`${API_BASE}/submissions/`, {
+          method: 'POST',
+          headers: headers,
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.status === 200 && data.message === "Image already analyzed.") {
+          appendTerminalLog("SHA-256 match found in DB. Re-using cached forensic results.", "success");
+          displayResults(data.data);
+          return;
+        }
+
+        if (!response.ok) {
+          appendTerminalLog(`Upload failed: ${JSON.stringify(data)}`, "error");
+          alert('Upload failed. Please check permissions or log in.');
+          return;
+        }
+
+        appendTerminalLog(`Image persisted. Assigned Submission UUID: ${data.id}`, "success");
+        appendTerminalLog("Celery background task triggered. Polling status...");
+        startPolling(data.id);
+
+      } catch (err) {
+        appendTerminalLog(`Network exception: ${err.message}`, "error");
+      }
+    }
+
+    // --- Status Polling Loop ---
+    let pollInterval = null;
+    function startPolling(submissionId) {
+      const progressBar = document.getElementById('pipeline-progress-bar');
+      const progressLabel = document.getElementById('pipeline-percent-label');
+      let stepCount = 1;
+
+      pollInterval = setInterval(async () => {
+        try {
+          const headers = {};
+          const token = getAccessToken();
+          if (token) headers['Authorization'] = `Bearer ${token}`;
+
+          const res = await fetch(`${API_BASE}/submissions/${submissionId}/`, { headers });
+          const submission = await res.json();
+
+          // Increment mock visual progress bar while running
+          if (submission.status === 'processing' || submission.status === 'pending') {
+            const pct = Math.min(85, 20 + (stepCount * 15));
+            progressBar.style.width = `${pct}%`;
+            progressLabel.innerText = `Processing modules... ${pct}% completed.`;
+            stepCount++;
+
+            if (stepCount === 2) {
+              setStepActive('step-exif');
+              appendTerminalLog("Extracting EXIF metadata tags and detecting camera discrepancies...");
+            } else if (stepCount === 3) {
+              setStepActive('step-face');
+              appendTerminalLog("Running YOLOv8-face detector over image tensors...");
+            } else if (stepCount === 4) {
+              setStepActive('step-forensics');
+              appendTerminalLog("Evaluating EfficientNet classifier and running Error Level Analysis (ELA)...");
+            }
+          } else if (submission.status === 'completed') {
+            clearInterval(pollInterval);
+            progressBar.style.width = '100%';
+            progressLabel.innerText = 'Analysis finished (100%).';
+            appendTerminalLog("All pipeline stages executed successfully.", "success");
+            setTimeout(() => displayResults(submission), 600);
+          } else if (submission.status === 'failed') {
+            clearInterval(pollInterval);
+            appendTerminalLog("Celery pipeline failed during execution.", "error");
+            alert('Pipeline analysis failed. Check terminal logs.');
+          }
+        } catch (e) {
+          appendTerminalLog(`Polling error: ${e.message}`, "error");
+        }
+      }, 2000);
+    }
+
+    function setStepActive(stepId) {
+      const el = document.getElementById(stepId);
+      if (!el) return;
+      el.className = "flex items-center text-xs font-semibold text-zinc-900 space-x-3";
+      el.querySelector('.step-icon').innerHTML = '<i data-lucide="check" class="w-3 h-3 text-emerald-600"></i>';
+      el.querySelector('.step-icon').className = 'step-icon w-5 h-5 rounded-full border border-emerald-500 bg-emerald-50 flex items-center justify-center';
+      lucide.createIcons();
+    }
+
+    // --- Render Forensic Results Dashboard ---
+    function displayResults(data) {
+      currentSubmissionData = data;
+
+      document.getElementById('processing-panel').classList.add('hidden');
+      document.getElementById('results-panel').classList.remove('hidden');
+
+      // Populate file details
+      document.getElementById('res-image').src = data.image;
+      document.getElementById('res-filename').innerText = data.original_filename;
+      document.getElementById('res-filesize').innerText = `${((data.file_size_bytes || 0) / (1024 * 1024)).toFixed(2)} MB`;
+
+      const report = data.report || {};
+      const verdict = (report.overall_verdict || 'AUTHENTIC').toLowerCase();
+      const score = (report.confidence_score || 0.0);
+
+      const banner = document.getElementById('verdict-banner');
+      const title = document.getElementById('verdict-title');
+      const scoreBadge = document.getElementById('verdict-score-badge');
+      const summary = document.getElementById('verdict-summary');
+      const detail = document.getElementById('verdict-detail');
+
+      scoreBadge.innerText = `Manipulation Score: ${(score * 100).toFixed(1)}%`;
+      detail.innerText = report.summary_text || 'Forensic analysis completed.';
+
+      if (verdict === 'manipulated') {
+        banner.className = "border rounded-xl p-6 shadow-sm bg-red-50/70 border-red-200 text-red-950 space-y-3";
+        title.className = "text-xs uppercase tracking-widest font-bold px-2.5 py-1 rounded-md bg-red-100 text-red-800 border border-red-300";
+        title.innerText = "SYNTHETIC / DEEPFAKE DETECTED";
+        summary.innerText = "High-Confidence Media Manipulation";
+      } else if (verdict === 'inconclusive') {
+        banner.className = "border rounded-xl p-6 shadow-sm bg-amber-50/70 border-amber-200 text-amber-950 space-y-3";
+        title.className = "text-xs uppercase tracking-widest font-bold px-2.5 py-1 rounded-md bg-amber-100 text-amber-800 border border-amber-300";
+        title.innerText = "INCONCLUSIVE — HUMAN AUDIT REQUIRED";
+        summary.innerText = "Potential Editing Artifacts Detected";
+      } else {
+        banner.className = "border rounded-xl p-6 shadow-sm bg-emerald-50/70 border-emerald-200 text-emerald-950 space-y-3";
+        title.className = "text-xs uppercase tracking-widest font-bold px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-300";
+        title.innerText = "LIKELY AUTHENTIC CAMERA ORIGINAL";
+        summary.innerText = "No Significant Manipulation Artifacts";
+      }
+
+      // Populate Web Matches & Fact-Checks
+      const matches = data.reverse_matches || [];
+      const matchContainer = document.getElementById('web-matches-list');
+      document.getElementById('match-count-badge').innerText = `${matches.length} matches`;
+
+      if (matches.length > 0) {
+        matchContainer.innerHTML = matches.map(m => `
+          <div class="p-2.5 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-between">
+            <div class="truncate max-w-[80%]">
+              <span class="font-medium text-zinc-900 block truncate">${m.domain}</span>
+              <a href="${m.page_url}" target="_blank" class="text-zinc-500 hover:underline truncate block">${m.page_url}</a>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-zinc-200 text-zinc-800 text-[10px] font-mono uppercase">${m.match_type} (${(m.similarity_score * 100).toFixed(0)}%)</span>
+          </div>
+        `).join('');
+      }
+
+      lucide.createIcons();
+    }
+
+    // Reset button handler
+    document.getElementById('reset-btn').onclick = () => {
+      document.getElementById('results-panel').classList.add('hidden');
+      document.getElementById('processing-panel').classList.add('hidden');
+      document.getElementById('upload-panel').classList.remove('hidden');
+      fileInput.value = '';
+    };
+
+    // Export Process Trail (JSON)
+    document.getElementById('export-json-btn').onclick = () => {
+      if (!currentSubmissionData) return;
+      const blob = new Blob([JSON.stringify(currentSubmissionData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `PixifAI-Report-${currentSubmissionData.id}.json`;
+      a.click();
+    };
+
+    // Initialize state on load
+    renderAuthState();
+  </script>
+</body>
+</html>

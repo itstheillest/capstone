@@ -1,3 +1,4 @@
+from PIL import Image
 from rest_framework import serializers
 from .models import ImageSubmission, ReverseImageMatch, FactCheckReference, DetectionReport
 
@@ -52,3 +53,35 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             "submitted_at",
             "completed_at",
         ]
+    
+    def validate_image(self, value):
+        # 1. Reject zero-byte / empty files
+        if value.size == 0:
+            raise serializers.ValidationError("Empty or zero-byte files are not allowed.")
+
+        # 2. Verify file header & integrity using Pillow
+        try:
+            img = Image.open(value)
+            img.verify()  # Validates image format and header structure
+        except Exception:
+            raise serializers.ValidationError("Uploaded file is spoofed or not a valid image format.")
+
+        # Reset file pointer after verify() reads the byte stream
+        value.seek(0)
+        return value
+
+    def validate(self, attrs):
+        image = attrs.get("image") or self.initial_data.get("image")
+        
+        if not image or getattr(image, "size", 0) == 0:
+            raise serializers.ValidationError({"image": "Empty or zero-byte files are not allowed."})
+
+        try:
+            img = Image.open(image)
+            img.verify()
+            if hasattr(image, "seek"):
+                image.seek(0)
+        except Exception:
+            raise serializers.ValidationError({"image": "Uploaded file is spoofed or not a valid image format."})
+
+        return attrs

@@ -5,6 +5,7 @@ import logging
 from celery import shared_task
 from django.contrib.auth import get_user_model
 from detection.pipeline import process_submission
+from .models import FactCheckReference
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -45,3 +46,4 @@ def cleanup_old_media_files(max_age_seconds=86400):
                     os.remove(file_path)
                 except OSError as e:
                     logger.error(f"Failed deleting old media file {file_path}: {e}")
+                

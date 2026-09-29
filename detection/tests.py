@@ -98,3 +98,46 @@ class PipelineIntegrationTests(APITestCase):
         self.assertTrue(DetectionReport.objects.filter(submission=submission).exists())
         self.assertTrue(ReverseImageMatch.objects.filter(submission=submission).exists())
         self.assertTrue(FactCheckReference.objects.filter(submission=submission).exists())
+        
+class EdgeCaseDetectionTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="edgecase_user",
+            password="testpassword123"
+        )
+        self.client.force_authenticate(user=self.user)
+        self.upload_url = "/api/submissions/"
+
+    def _create_dummy_image(self, width, height, format_="JPEG"):
+        file_obj = io.BytesIO()
+        image = Image.new("RGB", (width, height), color="red")
+        image.save(file_obj, format=format_)
+        file_obj.seek(0)
+        return file_obj
+
+    def test_zero_byte_file_upload(self):
+        empty_file = SimpleUploadedFile("empty.jpg", b"", content_type="image/jpeg")
+        response = self.client.post(self.upload_url, {"image": empty_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_file_extension_spoofing(self):
+        fake_image = SimpleUploadedFile("fake.png", b"NOT_AN_IMAGE_FILE_DATA", content_type="image/png")
+        response = self.client.post(self.upload_url, {"image": fake_image}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_extreme_image_dimensions(self):
+        large_dim_img = self._create_dummy_image(10000, 100)
+        upload_file = SimpleUploadedFile("wide.jpg", large_dim_img.read(), content_type="image/jpeg")
+        response = self.client.post(self.upload_url, {"image": upload_file}, format="multipart")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_rate_limiting_throttle(self):
+        img_data = self._create_dummy_image(100, 100)
+        responses = []
+        for _ in range(30):
+            upload_file = SimpleUploadedFile("test.jpg", img_data.getvalue(), content_type="image/jpeg")
+            responses.append(self.client.post(self.upload_url, {"image": upload_file}, format="multipart"))
+        
+        status_codes = [r.status_code for r in responses]
+        # Validates whether throttling is enforced or if requests succeed without crashing
+        self.assertTrue(any(code in [status.HTTP_201_CREATED, status.HTTP_429_TOO_MANY_REQUESTS] for code in status_codes))

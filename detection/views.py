@@ -24,26 +24,31 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
         }
     )
     def create(self, request, *args, **kwargs):
+        # 1. Run full serializer validation first (catches 0-byte files, spoofing, missing fields)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+    
         uploaded_file = request.FILES.get("image")
-        if not uploaded_file:
-            return Response({"error": "No image file provided."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Generate SHA-256 hash from file content
+    
+        # 2. Generate SHA-256 hash from file content
         hasher = hashlib.sha256()
         for chunk in uploaded_file.chunks():
             hasher.update(chunk)
         sha256_hash = hasher.hexdigest()
-
-        # Check for existing duplicate submission
+        
+        # Reset file pointer after reading chunks
+        uploaded_file.seek(0)
+    
+        # 3. Check for existing duplicate submission
         existing = ImageSubmission.objects.filter(sha256_hash=sha256_hash).first()
         if existing:
-            serializer = self.get_serializer(existing)
+            response_serializer = self.get_serializer(existing)
             return Response(
-                {"message": "Image already analyzed.", "data": serializer.data},
+                {"message": "Image already analyzed.", "data": response_serializer.data},
                 status=status.HTTP_200_OK
             )
-
-        # Save submission record
+    
+        # 4. Save submission record
         submission = ImageSubmission.objects.create(
             image=uploaded_file,
             sha256_hash=sha256_hash,
@@ -52,10 +57,10 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
             mime_type=uploaded_file.content_type or "image/png",
             status=ImageSubmission.Status.PENDING,
         )
-
-        # Dispatch async processing task
+    
+        # 5. Dispatch async processing task
         actor_id = str(request.user.id) if request.user.is_authenticated else None
         process_submission_task.delay(str(submission.id), actor_id=actor_id)
-
-        serializer = self.get_serializer(submission)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+        response_serializer = self.get_serializer(submission)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED)

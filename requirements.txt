@@ -20,6 +20,7 @@ face_recognition==1.3.0       # requires dlib + cmake to build; see note below
 deepface==0.0.93
 
 # --- Deep learning ---
+--extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.4.1                  # pick torch OR tensorflow as your primary framework, not both, to avoid CUDA conflicts
 torchvision==0.19.1
 # tensorflow==2.17.0           # uncomment if you standardize on TF instead of torch

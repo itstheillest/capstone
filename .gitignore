@@ -35,3 +35,9 @@ Thumbs.db
 # Ignore local environment variables and credentials
 .env
 pixifai-4ea9b6136cf4.json
+.vs/VSWorkspaceState.json
+.vs/uidev.slnx/FileContentIndex/3c63d42c-3e93-4e1c-aa99-615efa0ffaa8.vsidx
+.vs/uidev.slnx/v18/.wsuo
+.vs/uidev.slnx/v18/DocumentLayout.json
+.vs/slnx.sqlite
+repomix-output.xml

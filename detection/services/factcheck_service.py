@@ -1,7 +1,11 @@
 import os
 import logging
 import requests
-from google.cloud import vision
+try:
+    from google.cloud import vision
+    _has_vision = True
+except ImportError:
+    _has_vision = False
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -49,11 +53,15 @@ class FactCheckService:
         ]
 
     @staticmethod
+    
     def perform_reverse_image_search(image_path: str) -> list[dict]:
         """
         Uses Google Cloud Vision API Web Detection to find exact, partial, and similar web images.
         Falls back to mock data if credentials are missing or the API fails.
         """
+        if not _has_vision:
+            return FactCheckService._get_mock_reverse_matches()
+        
         if not os.path.exists(image_path):
             logger.error(f"Image not found for reverse search: {image_path}")
             return []

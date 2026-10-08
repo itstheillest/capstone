@@ -1,56 +1,22 @@
 from django.contrib import admin
-
-from .models import (
-    DetectionReport,
-    ExifMetadata,
-    FaceDetection,
-    FactCheckReference,
-    ForensicAnalysis,
-    ImageSubmission,
-    ReverseImageMatch,
-)
-
-
-class ExifMetadataInline(admin.StackedInline):
-    model = ExifMetadata
-    extra = 0
-
-
-class FaceDetectionInline(admin.TabularInline):
-    model = FaceDetection
-    extra = 0
-
-
-class ForensicAnalysisInline(admin.StackedInline):
-    model = ForensicAnalysis
-    extra = 0
+from .models import ImageSubmission, ReverseImageMatch, FactCheckReference, DetectionReport
 
 
 class ReverseImageMatchInline(admin.TabularInline):
     model = ReverseImageMatch
     extra = 0
+    readonly_fields = ["page_url", "domain", "match_type", "similarity_score", "created_at"]
 
 
 class FactCheckReferenceInline(admin.TabularInline):
     model = FactCheckReference
     extra = 0
+    readonly_fields = ["claim_text", "publisher_name", "publisher_url", "rating", "review_date"]
 
 
 @admin.register(ImageSubmission)
 class ImageSubmissionAdmin(admin.ModelAdmin):
-    list_display = ("id", "original_filename", "submitted_by", "status", "submitted_at")
-    list_filter = ("status",)
-    search_fields = ("original_filename", "sha256_hash")
-    inlines = [
-        ExifMetadataInline,
-        FaceDetectionInline,
-        ForensicAnalysisInline,
-        ReverseImageMatchInline,
-        FactCheckReferenceInline,
-    ]
-
-
-@admin.register(DetectionReport)
-class DetectionReportAdmin(admin.ModelAdmin):
-    list_display = ("submission", "overall_verdict", "confidence_score", "review_status")
-    list_filter = ("review_status", "overall_verdict")
+    list_display = ["id", "original_filename", "status", "submitted_at", "completed_at"]
+    list_filter = ["status", "submitted_at"]
+    search_fields = ["id", "sha256_hash", "original_filename"]
+    inlines = [ReverseImageMatchInline, FactCheckReferenceInline]

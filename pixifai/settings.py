@@ -11,7 +11,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env if present
-load_dotenv(BASE_DIR / ".env")
+load_dotenv()
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get(
@@ -176,6 +176,8 @@ REST_FRAMEWORK = {
         'user': '100/hour',
     },
 }
+
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
 
 # Swagger UI / OpenAPI Configuration
 SPECTACULAR_SETTINGS = {

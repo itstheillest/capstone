@@ -30,6 +30,7 @@ def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manip
     tags = []
     seen = set()
 
+    # YOLO object detection tags (used as context, not for legal mapping)
     for result in results:
         for box in result.boxes:
             class_id = int(box.cls[0])
@@ -42,7 +43,15 @@ def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manip
                     "tag_code": label.lower().replace(" ", "_"),
                     "tag_label": label.capitalize(),
                     "confidence": round(confidence, 4),
+                    "rule_description": f"YOLO object detection: '{label}' detected with confidence {confidence:.4f}.",
                 })
+
+    # Rule-based legal tags — these are the ones that drive legal mapping
+    for rule_fn in RULES:
+        result = rule_fn(face_count, verdict, manipulation_score)
+        if result and result["tag_code"] not in seen:
+            seen.add(result["tag_code"])
+            tags.append(result)
 
     return tags
 

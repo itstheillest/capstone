@@ -126,8 +126,13 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
                 "review_status": DetectionReport.ReviewStatus.AUTO_GENERATED,
             },
         )
+        # Initial legal mapping — runs immediately after tagging, before fact-check.
+        # A second enriched pass runs after the fact-check layer below.
+        face_count = len(faces)
         legal_mappings = mapping_service.apply_mappings(
-            report, [t["tag_code"] for t in tags]
+            report,
+            [t["tag_code"] for t in tags],
+            face_count=face_count,
         )
         _log(
             submission,
@@ -144,6 +149,19 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
             image_path=image_path,
             context_query=context_query,
             actor=actor,
+        )
+
+        # --- 6b. Re-run legal mapping enriched with fact-check + reverse search results ---
+        reverse_match_count = submission.reverse_matches.count()
+        debunked_ratings = list(
+            submission.fact_check_references.values_list("rating", flat=True)
+        )
+        legal_mappings = mapping_service.apply_mappings(
+            report,
+            [t["tag_code"] for t in tags],
+            face_count=face_count,
+            reverse_match_count=reverse_match_count,
+            debunked_ratings=debunked_ratings,
         )
 
         # --- Completion ---

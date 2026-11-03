@@ -58,3 +58,4 @@ google-cloud-vision
 #   sudo apt-get install -y cmake build-essential libopenblas-dev liblapack-dev
 # On Windows, use a prebuilt dlib wheel instead of building from source.
 
+serpapi==1.1.2

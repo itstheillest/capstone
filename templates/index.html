@@ -360,6 +360,11 @@
       term.scrollTop = term.scrollHeight;
     }
 
+    function authHeaders() {
+      const token = localStorage.getItem('access_token');
+      return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
+
     async function handleUpload(file) {
       chosenFileLabel.innerText = file.name;
 
@@ -408,7 +413,14 @@
 
       const timer = setInterval(async () => {
         try {
-          const res = await fetch(`${API_BASE}/submissions/${id}/`);
+          const res = await fetch(`${API_BASE}/submissions/${id}/`, { headers: authHeaders() });
+
+          if (!res.ok) {
+            clearInterval(timer);
+            appendLog(`[ERROR] Status check failed (HTTP ${res.status}).`);
+            return;
+          }
+
           const data = await res.json();
 
           if (data.status === 'completed') {

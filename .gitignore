@@ -41,3 +41,5 @@ pixifai-4ea9b6136cf4.json
 .vs/uidev.slnx/v18/DocumentLayout.json
 .vs/slnx.sqlite
 repomix-output.xml
+*.before-supabase
+pixifai-data.json

@@ -11,7 +11,7 @@ psycopg2-binary
 
 # --- Async task queue (recommended: ML inference is too slow for a request/response cycle) ---
 celery==5.4.0
-redis==5.0.8
+redis>=6.1.0,<7
 
 # --- Computer vision / forensics ---
 opencv-python-headless

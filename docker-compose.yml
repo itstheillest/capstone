@@ -28,6 +28,7 @@ services:
       - POSTGRES_DB=pixifai
       - POSTGRES_USER=pixifai
       - POSTGRES_PASSWORD=pixifaipassword
+      - POSTGRES_SSLMODE=prefer
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
@@ -48,6 +49,7 @@ services:
       - POSTGRES_DB=pixifai
       - POSTGRES_USER=pixifai
       - POSTGRES_PASSWORD=pixifaipassword
+      - POSTGRES_SSLMODE=prefer
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:

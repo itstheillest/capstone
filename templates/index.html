@@ -479,12 +479,27 @@
       const bar = document.getElementById('pipeline-progress-bar');
       const label = document.getElementById('pipeline-percent-label');
       let progress = 35;
+      let delayMs = 4000;
+      const maxDelayMs = 60000;
 
-      const timer = setInterval(async () => {
+      // Schedule the next request only after the current one finishes. This
+      // avoids overlapping polls and respects DRF throttling on long analyses.
+      const poll = async () => {
         try {
           const res = await fetch(`${API_BASE}/submissions/${id}/`, { headers: authHeaders() });
+
+          if (res.status === 429 || res.status >= 500) {
+            const retryAfter = Number(res.headers.get('Retry-After'));
+            const waitMs = Number.isFinite(retryAfter) && retryAfter > 0
+              ? retryAfter * 1000
+              : delayMs;
+            appendLog(`[INFO] Status check was rate-limited or temporarily unavailable. Retrying in ${Math.ceil(waitMs / 1000)}s...`);
+            setTimeout(poll, waitMs);
+            delayMs = Math.min(maxDelayMs, Math.max(delayMs * 2, waitMs));
+            return;
+          }
+
           if (!res.ok) {
-            clearInterval(timer);
             appendLog(`[ERROR] Status check failed (HTTP ${res.status}).`);
             return;
           }
@@ -492,23 +507,27 @@
           const data = await res.json();
 
           if (data.status === 'completed') {
-            clearInterval(timer);
             bar.style.width = '100%';
             label.innerText = 'Processing modules... 100% completed.';
             appendLog('[SUCCESS] All 6 forensic & legal pipeline layers completed.');
             setTimeout(() => showResults(data), 400);
           } else if (data.status === 'failed') {
-            clearInterval(timer);
-            appendLog('[ERROR] Analysis pipeline reported failure.');
+            appendLog(`[ERROR] Analysis pipeline reported failure${data.error ? `: ${data.error}` : '.'}`);
           } else {
             progress = Math.min(90, progress + 20);
             bar.style.width = `${progress}%`;
             label.innerText = `Processing modules... ${progress}% completed.`;
+            delayMs = 4000;
+            setTimeout(poll, delayMs);
           }
         } catch (e) {
-          appendLog(`[ERROR] Polling exception: ${e.message}`);
+          appendLog(`[INFO] Temporary status-check problem (${e.message}). Retrying in ${Math.ceil(delayMs / 1000)}s...`);
+          setTimeout(poll, delayMs);
+          delayMs = Math.min(maxDelayMs, delayMs * 2);
         }
-      }, 1200);
+      };
+
+      setTimeout(poll, 2000);
     }
 
     function showResults(data) {

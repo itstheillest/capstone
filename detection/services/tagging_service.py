@@ -67,9 +67,9 @@ def _rule_inconclusive(face_count: int, verdict: str, manipulation_score: float)
             "tag_code": "requires_human_review",
             "tag_label": "Inconclusive — Requires Human Review",
             "rule_description": (
-                f"Forensic score ({manipulation_score:.3f}) fell in the inconclusive "
-                f"range with {face_count} face(s) detected. Flagged for manual review "
-                "rather than an automated verdict."
+                f"Automated forensic indicators produced a score of {manipulation_score:.3f} "
+                f"with {face_count} face(s) detected. This is not conclusive evidence of "
+                "manipulation; manual review is required."
             ),
             "confidence": manipulation_score,
         }

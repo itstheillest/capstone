@@ -233,7 +233,12 @@ def analyze(image_path: str) -> dict:
         model_name = "PixifAI Spectral + ELA Heuristic Engine"
         model_version = "v1.1"
 
-    if manipulation_score >= 0.5:
+    if model is None:
+        # ELA/spectral rules are not calibrated as a classifier. They can flag
+        # ordinary edits, exports, and JPEG recompression, so they must not
+        # produce a definitive authentic/manipulated verdict on their own.
+        verdict = "inconclusive"
+    elif manipulation_score >= 0.5:
         verdict = "manipulated"
     elif manipulation_score >= 0.25:
         verdict = "inconclusive"

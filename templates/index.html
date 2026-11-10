@@ -600,7 +600,8 @@
       const allTagsEl = document.getElementById('res-all-tags');
       const modelInfoEl = document.getElementById('res-model-info');
 
-      scoreEl.innerText = `Manipulation Score: ${score.toFixed(1)}%`;
+      const heuristicOnly = (forensic.model_name || '').toLowerCase().includes('heuristic');
+      scoreEl.innerText = `${heuristicOnly ? 'Heuristic anomaly score' : 'Manipulation Score'}: ${score.toFixed(1)}%`;
       modelInfoEl.innerText = `Engine: ${forensic.model_name || 'ELA-heuristic-baseline'} (${forensic.model_version || 'v0.1'})`;
 
       if (verdict === 'manipulated') {

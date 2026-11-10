@@ -34,9 +34,9 @@
   <!-- ================= TOP UTILITY ROW ================= -->
   <div class="w-full bg-white pt-3 pr-8 flex justify-end">
     <div class="flex items-center space-x-6 text-[13px] text-zinc-600 font-normal">
-      <a href="#" class="hover:text-black transition">Help</a>
-      <a href="#" class="hover:text-black transition">Support</a>
-      <a href="#" class="hover:text-black transition">Contact</a>
+      <a href="/api/docs/" target="_blank" class="hover:text-black transition">Help</a>
+      <a href="/api/docs/" target="_blank" class="hover:text-black transition">Support</a>
+      <a href="/admin/" target="_blank" class="hover:text-black transition">Admin</a>
     </div>
   </div>
 
@@ -72,6 +72,9 @@
 
       <!-- Auth State Indicator -->
       <div class="flex items-center space-x-3">
+        <span id="auth-role-badge" class="hidden text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+          Analyst Authenticated
+        </span>
         <button id="auth-modal-btn" class="text-xs px-3 py-1 rounded-md border border-zinc-300 text-zinc-600 hover:text-black hover:border-zinc-400 transition font-medium">
           Sign In
         </button>
@@ -103,17 +106,17 @@
       <div id="upload-panel" class="w-full flex justify-center py-6">
         <div class="w-full max-w-[430px] bg-white border border-zinc-200/90 rounded-2xl p-7 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.06)] flex flex-col items-center space-y-4">
           
-          <input type="file" id="file-input" accept="image/png,image/jpeg" class="hidden">
+          <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp" class="hidden">
 
           <!-- Mock Native File Picker Frame -->
           <div id="mock-file-frame" class="w-full border border-zinc-300 rounded-lg px-3 py-2 flex items-center justify-between text-xs cursor-pointer hover:border-zinc-400 transition bg-white">
-            <div class="flex items-center space-x-2">
-              <span class="font-semibold text-zinc-800">Choose File</span>
-              <span id="chosen-file-label" class="text-zinc-400 font-normal">No file chosen</span>
+            <div class="flex items-center space-x-2 truncate">
+              <span class="font-semibold text-zinc-800 shrink-0">Choose File</span>
+              <span id="chosen-file-label" class="text-zinc-400 font-normal truncate">No file chosen</span>
             </div>
           </div>
 
-          <p class="text-[11px] text-zinc-500 font-medium tracking-tight">Supported Formats: PNG, JPG</p>
+          <p class="text-[11px] text-zinc-500 font-medium tracking-tight">Supported Formats: PNG, JPG, WEBP</p>
 
           <!-- Browse Files Button -->
           <button id="browse-btn" class="w-full py-2.5 bg-[#18181b] hover:bg-black text-white text-xs font-medium rounded-lg transition shadow-sm">
@@ -128,7 +131,7 @@
         </div>
       </div>
 
-      <!-- ================= SCREEN 2: PIPELINE EXECUTION (FROM PDF) ================= -->
+      <!-- ================= SCREEN 2: PIPELINE EXECUTION ================= -->
       <div id="processing-panel" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         <!-- Media Card Left -->
@@ -146,9 +149,9 @@
 
           <!-- Filename Info Box -->
           <div class="border border-zinc-200 rounded-lg px-4 py-2.5 flex items-center justify-between text-xs bg-zinc-50/50">
-            <div class="flex items-center space-x-2">
-              <span class="font-semibold text-zinc-900">Choose File</span>
-              <span id="proc-filename-display" class="text-zinc-600">Filename.png | 4.2 MB</span>
+            <div class="flex items-center space-x-2 truncate">
+              <span class="font-semibold text-zinc-900 shrink-0">Selected File</span>
+              <span id="proc-filename-display" class="text-zinc-600 truncate">Filename.png | 0.0 MB</span>
             </div>
           </div>
         </div>
@@ -161,26 +164,30 @@
             <div>
               <div class="flex items-center space-x-2 text-xs text-zinc-600 mb-2">
                 <i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i>
-                <span id="pipeline-percent-label">Processing modules... 66% completed.</span>
+                <span id="pipeline-percent-label">Processing modules... 25% completed.</span>
               </div>
               <div class="w-full bg-zinc-200 rounded-full h-1.5 overflow-hidden">
-                <div id="pipeline-progress-bar" class="bg-black h-1.5 rounded-full transition-all duration-300" style="width: 66%"></div>
+                <div id="pipeline-progress-bar" class="bg-black h-1.5 rounded-full transition-all duration-300" style="width: 25%"></div>
               </div>
             </div>
 
             <!-- Pipeline Checkpoints -->
             <div class="space-y-3.5 text-xs">
-              <div id="step-yolo" class="flex items-center space-x-3 text-zinc-900 font-medium">
-                <i data-lucide="sparkles" class="w-4 h-4 text-zinc-700"></i>
-                <span>Object & Face Detection (YOLOv8)</span>
-              </div>
               <div id="step-exif" class="flex items-center space-x-3 text-zinc-900 font-medium">
                 <i data-lucide="check" class="w-4 h-4 text-zinc-800"></i>
-                <span>Metadata Extraction (ExifTool)</span>
+                <span>Metadata & Provenance Extraction (ExifTool / Pillow)</span>
               </div>
-              <div id="step-opencv" class="flex items-center space-x-3 text-zinc-400 font-medium">
-                <i data-lucide="check" class="w-4 h-4 text-zinc-400"></i>
-                <span>Pre-processing & Normalization (OpenCV)</span>
+              <div id="step-yolo" class="flex items-center space-x-3 text-zinc-900 font-medium">
+                <i data-lucide="sparkles" class="w-4 h-4 text-zinc-700"></i>
+                <span>Object & Face Detection (YOLOv8 / Haar)</span>
+              </div>
+              <div id="step-forensic" class="flex items-center space-x-3 text-zinc-600 font-medium">
+                <i data-lucide="cpu" class="w-4 h-4 text-zinc-500"></i>
+                <span>Synthetic Media & Error Level Analysis (CNN / ELA)</span>
+              </div>
+              <div id="step-legal" class="flex items-center space-x-3 text-zinc-400 font-medium">
+                <i data-lucide="scale" class="w-4 h-4 text-zinc-400"></i>
+                <span>Tagging Layer, Web Intelligence & Legal Mapping</span>
               </div>
             </div>
           </div>
@@ -190,9 +197,6 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-900">Live System Logs</h3>
             <div id="log-terminal" class="font-mono text-xs text-zinc-700 bg-zinc-50 border border-zinc-200 rounded-lg p-3.5 space-y-1.5 max-h-48 overflow-y-auto">
               <div>[INFO] Initializing PixifAI Analysis Layer...</div>
-              <div>[SUCCESS] OpenCV: Image normalized to 640x640.</div>
-              <div>[SUCCESS] ExifTool: Extracted metadata tags.</div>
-              <div>[INFO] YOLOv8: Scanning frame tensors for objects...</div>
             </div>
           </div>
         </div>
@@ -205,9 +209,14 @@
           <button id="reset-btn" class="text-xs font-medium px-4 py-2 border border-zinc-300 rounded-lg hover:bg-zinc-50 transition">
             ← Process Another Image
           </button>
-          <button id="export-json-btn" class="text-xs font-semibold px-4 py-2 bg-black text-white rounded-lg hover:bg-zinc-800 transition">
-            Export Process Trail (JSON/CSV)
-          </button>
+          <div class="flex items-center space-x-2">
+            <button id="export-csv-btn" class="text-xs font-medium px-4 py-2 border border-zinc-300 rounded-lg hover:bg-zinc-50 transition">
+              Export CSV
+            </button>
+            <button id="export-json-btn" class="text-xs font-semibold px-4 py-2 bg-black text-white rounded-lg hover:bg-zinc-800 transition">
+              Export Process Trail (JSON)
+            </button>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -216,26 +225,32 @@
           <div class="lg:col-span-5 space-y-4">
             <div class="relative rounded-2xl overflow-hidden border border-zinc-200 bg-black">
               <img id="res-image" src="" alt="Analyzed Media" class="w-full h-auto object-contain max-h-[460px]">
-              <div class="absolute top-4 left-4">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#ff9900] text-white shadow">
-                  <span class="w-4 h-4 rounded-full bg-white text-[#ff9900] flex items-center justify-center text-[10px]">1</span>
-                  YOLOv8: Face Detected.
+              <div id="res-face-badge-wrapper" class="absolute top-4 left-4">
+                <span id="res-face-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#ff9900] text-white shadow">
+                  <span id="res-face-count-num" class="w-4 h-4 rounded-full bg-white text-[#ff9900] flex items-center justify-center text-[10px]">0</span>
+                  <span id="res-face-badge-text">YOLOv8: No Faces Detected</span>
                 </span>
               </div>
             </div>
 
             <div class="border border-zinc-200 rounded-xl px-4 py-2.5 bg-zinc-50 flex items-center justify-between text-xs">
-              <span id="res-filename" class="font-medium text-zinc-800">Filename.png | 4.2 MB</span>
+              <span id="res-filename" class="font-medium text-zinc-800 truncate">Filename.png | 0.0 MB</span>
+              <span id="res-sha256" class="font-mono text-[10px] text-zinc-400 truncate max-w-[140px]" title=""></span>
             </div>
 
+            <!-- EXIF & Provenance Indicators (from exif_service.py) -->
             <div class="space-y-2 text-xs">
-              <div class="flex items-center justify-between p-3 border border-zinc-200 rounded-xl">
-                <span class="text-red-600 font-medium">Source Status: Modified / Non-Camera Original</span>
-                <i data-lucide="shield-alert" class="w-4 h-4 text-zinc-400"></i>
+              <div id="res-source-box" class="flex items-center justify-between p-3 border border-zinc-200 rounded-xl">
+                <span id="res-source-status" class="text-zinc-700 font-medium">Source Status: Evaluating...</span>
+                <i data-lucide="shield-alert" class="w-4 h-4 text-zinc-400 shrink-0"></i>
               </div>
-              <div class="flex items-center justify-between p-3 border border-zinc-200 rounded-xl">
-                <span class="text-red-600 font-medium">Software Signature: Stable Diffusion / Generative</span>
-                <i data-lucide="shield-alert" class="w-4 h-4 text-zinc-400"></i>
+              <div id="res-software-box" class="flex items-center justify-between p-3 border border-zinc-200 rounded-xl">
+                <span id="res-software-status" class="text-zinc-700 font-medium">Software Signature: None Detected</span>
+                <i data-lucide="cpu" class="w-4 h-4 text-zinc-400 shrink-0"></i>
+              </div>
+              <div id="res-camera-box" class="flex items-center justify-between p-3 border border-zinc-200 rounded-xl bg-zinc-50/50">
+                <span id="res-camera-status" class="text-zinc-600 font-medium">Camera Hardware: Unknown / Stripped</span>
+                <i data-lucide="camera" class="w-4 h-4 text-zinc-400 shrink-0"></i>
               </div>
             </div>
           </div>
@@ -243,39 +258,61 @@
           <!-- Classification & Statutory Framework Right -->
           <div class="lg:col-span-7 space-y-6">
             
-            <!-- Verdict Banner -->
-            <div class="border border-red-200 bg-red-50/50 rounded-2xl p-6 space-y-2">
-              <span class="text-xs font-bold tracking-wider text-red-700 uppercase">SYNTHETIC / DEEPFAKE DETECTED</span>
+            <!-- Verdict Banner (from forensic_service.py & tagging_service.py) -->
+            <div id="res-verdict-card" class="border border-red-200 bg-red-50/50 rounded-2xl p-6 space-y-2">
+              <div class="flex items-center justify-between">
+                <span id="res-verdict-badge" class="text-xs font-bold tracking-wider text-red-700 uppercase">
+                  SYNTHETIC / DEEPFAKE DETECTED
+                </span>
+                <span id="res-confidence-score" class="font-mono text-xs font-semibold text-zinc-700">
+                  Score: 0.0%
+                </span>
+              </div>
               <h2 class="text-lg font-bold text-zinc-900">Tagging Layer Classification</h2>
-              <p class="text-xs font-semibold text-zinc-700">Identity Fraud / Profile Misrepresentation</p>
-              <p class="text-[11px] text-zinc-500 pt-1">Classification: Pre-trained CNN/ViT Model</p>
+              <p id="res-primary-tag" class="text-xs font-semibold text-zinc-800">Identity Fraud / Profile Misrepresentation</p>
+              <p id="res-tag-description" class="text-xs text-zinc-600 leading-relaxed"></p>
+              <div id="res-all-tags" class="flex flex-wrap gap-1.5 pt-2"></div>
+              <p id="res-model-info" class="text-[11px] text-zinc-500 pt-1">Classification: ELA-heuristic-baseline</p>
             </div>
 
-            <!-- DeepFace Facial Attributes -->
+            <!-- Biometric & Forensic Telemetry (from face_service.py & forensic_service.py) -->
             <div class="border border-zinc-200 rounded-2xl p-6 space-y-4">
-              <h3 class="text-sm font-bold text-zinc-900">Facial Attributes <span class="text-xs font-normal text-zinc-500">(DeepFace Analysis)</span></h3>
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-zinc-900">Biometric & Forensic Telemetry <span class="text-xs font-normal text-zinc-500">(YOLOv8 / DeepFace / ELA)</span></h3>
+              </div>
               <div class="grid grid-cols-3 gap-4 pt-1">
                 <div class="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50">
-                  <span class="text-[11px] text-zinc-500 block">Estimated Age</span>
-                  <span class="text-xs font-bold text-zinc-900 mt-1 block">24–28 Years</span>
+                  <span class="text-[11px] text-zinc-500 block">Faces Detected</span>
+                  <span id="res-telemetry-faces" class="text-xs font-bold text-zinc-900 mt-1 block">0 Faces</span>
                 </div>
                 <div class="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50">
-                  <span class="text-[11px] text-zinc-500 block">Predicted Gender</span>
-                  <span class="text-xs font-bold text-zinc-900 mt-1 block">Male (94%)</span>
+                  <span class="text-[11px] text-zinc-500 block">Facial Attributes</span>
+                  <span id="res-telemetry-attributes" class="text-xs font-bold text-zinc-900 mt-1 block">N/A</span>
                 </div>
                 <div class="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50">
-                  <span class="text-[11px] text-zinc-500 block">Dominant Emotion</span>
-                  <span class="text-xs font-bold text-zinc-900 mt-1 block">Neutral</span>
+                  <span class="text-[11px] text-zinc-500 block">ELA Anomaly Blocks</span>
+                  <span id="res-telemetry-anomalies" class="text-xs font-bold text-zinc-900 mt-1 block">0 Regions</span>
                 </div>
               </div>
             </div>
 
-            <!-- Statutory Framework -->
-            <div class="border border-zinc-200 rounded-2xl p-6 space-y-2">
-              <h3 class="text-sm font-bold text-zinc-900">Philippine Legal Framework</h3>
-              <p class="text-xs text-zinc-600 leading-relaxed">
-                This content contains algorithmic modifications that potentially infringe upon <strong class="text-zinc-900">R.A. 10175 (Cybercrime Prevention Act of 2012)</strong> regarding identity theft and digital forgery.
-              </p>
+            <!-- Statutory Framework (from legalmap / mapping_service.py) -->
+            <div class="border border-zinc-200 rounded-2xl p-6 space-y-3">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-zinc-900">Philippine Legal Framework</h3>
+                <span class="text-[11px] text-zinc-400 font-medium">Jurisdiction: Philippines</span>
+              </div>
+              <div id="res-legal-list" class="space-y-3 text-xs"></div>
+            </div>
+
+            <!-- External Web Intelligence & Fact-Checks (from vision_service.py & factcheck_service.py) -->
+            <div class="border border-zinc-200 rounded-2xl p-6 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-zinc-900">Web Detection & Fact-Check References</h3>
+                <span id="res-web-count" class="text-[11px] font-mono text-zinc-500">0 records</span>
+              </div>
+              <div id="res-web-matches" class="space-y-2 text-xs"></div>
+              <div id="res-fact-checks" class="space-y-2 text-xs pt-2 border-t border-zinc-100"></div>
             </div>
 
           </div>
@@ -307,12 +344,12 @@
 
       <form id="jwt-login-form" class="space-y-3">
         <div>
-          <label class="block text-xs font-medium text-zinc-700 mb-1">Employee Number</label>
-          <input type="text" id="login-username" required value="admin" class="w-full text-xs px-3 py-2 border border-zinc-300 rounded-lg focus:ring-1 focus:ring-black">
+          <label class="block text-xs font-medium text-zinc-700 mb-1">Username / Employee ID</label>
+          <input type="text" id="login-username" required value="admin" class="w-full text-xs px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-black">
         </div>
         <div>
           <label class="block text-xs font-medium text-zinc-700 mb-1">Password</label>
-          <input type="password" id="login-password" required class="w-full text-xs px-3 py-2 border border-zinc-300 rounded-lg focus:ring-1 focus:ring-black">
+          <input type="password" id="login-password" required class="w-full text-xs px-3 py-2 border border-zinc-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-black">
         </div>
         <div id="auth-error-msg" class="text-xs text-red-600 hidden"></div>
         <button type="submit" class="w-full py-2 bg-black text-white rounded-lg text-xs font-medium hover:bg-zinc-800 transition">
@@ -335,6 +372,32 @@
     const mockFrame = document.getElementById('mock-file-frame');
     const dropZone = document.getElementById('drop-zone');
     const chosenFileLabel = document.getElementById('chosen-file-label');
+
+    // Sync Auth State UI
+    function syncAuthUI() {
+      const token = localStorage.getItem('access_token');
+      const btn = document.getElementById('auth-modal-btn');
+      const badge = document.getElementById('auth-role-badge');
+      if (token) {
+        badge.classList.remove('hidden');
+        btn.innerText = 'Sign Out';
+        btn.onclick = () => {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          syncAuthUI();
+        };
+      } else {
+        badge.classList.add('hidden');
+        btn.innerText = 'Sign In';
+        btn.onclick = () => document.getElementById('auth-modal').classList.remove('hidden');
+      }
+    }
+    syncAuthUI();
+
+    function authHeaders() {
+      const token = localStorage.getItem('access_token');
+      return token ? { 'Authorization': `Bearer ${token}` } : {};
+    }
 
     // Bind file selection triggers
     browseBtn.onclick = () => fileInput.click();
@@ -360,36 +423,41 @@
       term.scrollTop = term.scrollHeight;
     }
 
-    function authHeaders() {
-      const token = localStorage.getItem('access_token');
-      return token ? { 'Authorization': `Bearer ${token}` } : {};
-    }
-
     async function handleUpload(file) {
       chosenFileLabel.innerText = file.name;
 
-      // Show processing panel
       document.getElementById('upload-panel').classList.add('hidden');
       document.getElementById('processing-panel').classList.remove('hidden');
+      document.getElementById('results-panel').classList.add('hidden');
 
-      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
       document.getElementById('proc-filename-display').innerText = `${file.name} | ${sizeMb} MB`;
       document.getElementById('proc-preview-img').src = URL.createObjectURL(file);
 
-      appendLog(`[INFO] Submitting ${file.name} to PixifAI pipeline...`);
+      const term = document.getElementById('log-terminal');
+      term.innerHTML = '<div>[INFO] Initializing PixifAI Analysis Layer...</div>';
+      appendLog(`[INFO] Uploading ${file.name} (${sizeMb} MB)...`);
 
       const form = new FormData();
       form.append('image', file);
 
-      const headers = {};
-      const token = localStorage.getItem('access_token');
-      if (token) headers['Authorization'] = `Bearer ${token}`;
-
       try {
-        const res = await fetch(`${API_BASE}/submissions/`, { method: 'POST', headers, body: form });
+        const res = await fetch(`${API_BASE}/submissions/`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: form
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          appendLog('[ERROR] Authentication required. Please click "Sign In" in the top right.');
+          document.getElementById('auth-modal').classList.remove('hidden');
+          return;
+        }
+
         const data = await res.json();
 
         if (res.status === 200 && data.message === "Image already analyzed.") {
+          appendLog('[SUCCESS] SHA-256 hash match found in database. Loading cached forensic report.');
           showResults(data.data);
           return;
         }
@@ -399,22 +467,22 @@
           return;
         }
 
-        appendLog(`[SUCCESS] Assigned UUID: ${data.id}. Worker active.`);
+        appendLog(`[SUCCESS] Submission UUID: ${data.id}`);
+        appendLog('[INFO] Running ExifTool, YOLOv8, ELA Forensics, and Statutory Mapping...');
         pollStatus(data.id);
       } catch (err) {
-        appendLog(`[ERROR] Connection error: ${err.message}`);
+        appendLog(`[ERROR] Network/Server exception: ${err.message}`);
       }
     }
 
     function pollStatus(id) {
       const bar = document.getElementById('pipeline-progress-bar');
       const label = document.getElementById('pipeline-percent-label');
-      let progress = 30;
+      let progress = 35;
 
       const timer = setInterval(async () => {
         try {
           const res = await fetch(`${API_BASE}/submissions/${id}/`, { headers: authHeaders() });
-
           if (!res.ok) {
             clearInterval(timer);
             appendLog(`[ERROR] Status check failed (HTTP ${res.status}).`);
@@ -427,19 +495,20 @@
             clearInterval(timer);
             bar.style.width = '100%';
             label.innerText = 'Processing modules... 100% completed.';
-            setTimeout(() => showResults(data), 500);
+            appendLog('[SUCCESS] All 6 forensic & legal pipeline layers completed.');
+            setTimeout(() => showResults(data), 400);
           } else if (data.status === 'failed') {
             clearInterval(timer);
             appendLog('[ERROR] Analysis pipeline reported failure.');
           } else {
-            progress = Math.min(85, progress + 15);
+            progress = Math.min(90, progress + 20);
             bar.style.width = `${progress}%`;
             label.innerText = `Processing modules... ${progress}% completed.`;
           }
         } catch (e) {
           appendLog(`[ERROR] Polling exception: ${e.message}`);
         }
-      }, 2000);
+      }, 1200);
     }
 
     function showResults(data) {
@@ -447,13 +516,191 @@
       document.getElementById('processing-panel').classList.add('hidden');
       document.getElementById('results-panel').classList.remove('hidden');
 
+      // 1. Basic File & Image Info
       document.getElementById('res-image').src = data.image;
-      const sizeMb = ((data.file_size_bytes || 0) / (1024 * 1024)).toFixed(1);
-      document.getElementById('res-filename').innerText = `${data.original_filename} | ${sizeMb} MB`;
+      const sizeMb = ((data.file_size_bytes || 0) / (1024 * 1024)).toFixed(2);
+      document.getElementById('res-filename').innerText = `${data.original_filename || 'Uploaded Image'} | ${sizeMb} MB`;
+      const shaEl = document.getElementById('res-sha256');
+      shaEl.innerText = data.sha256_hash ? `SHA256: ${data.sha256_hash.slice(0, 12)}…` : '';
+      shaEl.title = data.sha256_hash || '';
+
+      // 2. Face Detection Service Output (face_service.py)
+      const faces = data.faces || [];
+      const faceCount = faces.length;
+      const faceNumEl = document.getElementById('res-face-count-num');
+      const faceTextEl = document.getElementById('res-face-badge-text');
+      const faceBadgeEl = document.getElementById('res-face-badge');
+
+      faceNumEl.innerText = faceCount;
+      if (faceCount > 0) {
+        const topConf = Math.round((faces[0].detection_confidence || 0.9) * 100);
+        faceTextEl.innerText = `YOLOv8: ${faceCount} Face${faceCount > 1 ? 's' : ''} Detected (${topConf}%)`;
+        faceBadgeEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#ff9900] text-white shadow';
+      } else {
+        faceTextEl.innerText = 'YOLOv8: No Faces Detected';
+        faceBadgeEl.className = 'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-zinc-800 text-zinc-200 shadow';
+      }
+
+      // 3. EXIF Metadata Service Output (exif_service.py)
+      const exif = data.exif || {};
+      const sourceStatusEl = document.getElementById('res-source-status');
+      const softwareStatusEl = document.getElementById('res-software-status');
+      const cameraStatusEl = document.getElementById('res-camera-status');
+
+      if (exif.has_discrepancy) {
+        sourceStatusEl.className = 'text-red-600 font-medium';
+        sourceStatusEl.innerText = `Source Status: ${exif.discrepancy_notes || 'Modified / No Original Camera EXIF'}`;
+      } else {
+        sourceStatusEl.className = 'text-emerald-700 font-medium';
+        sourceStatusEl.innerText = 'Source Status: Verified Camera Metadata Present';
+      }
+
+      if (exif.software_tag) {
+        softwareStatusEl.className = exif.has_discrepancy ? 'text-red-600 font-medium' : 'text-zinc-800 font-medium';
+        softwareStatusEl.innerText = `Software Signature: ${exif.software_tag}`;
+      } else {
+        softwareStatusEl.className = 'text-zinc-600 font-medium';
+        softwareStatusEl.innerText = 'Software Signature: None Embedded';
+      }
+
+      const camString = [exif.camera_make, exif.camera_model].filter(Boolean).join(' ');
+      cameraStatusEl.innerText = `Camera Hardware: ${camString || 'None / Stripped'}`;
+
+      // 4. Forensic Service & Tagging Service Output (forensic_service.py + tagging_service.py)
+      const report = data.report || {};
+      const forensic = data.forensic_result || {};
+      const tags = data.tags || [];
+      const verdict = (report.overall_verdict || forensic.verdict || 'authentic').toLowerCase();
+      const score = (forensic.manipulation_score ?? report.confidence_score ?? 0) * 100;
+
+      const verdictCard = document.getElementById('res-verdict-card');
+      const verdictBadge = document.getElementById('res-verdict-badge');
+      const scoreEl = document.getElementById('res-confidence-score');
+      const primaryTagEl = document.getElementById('res-primary-tag');
+      const tagDescEl = document.getElementById('res-tag-description');
+      const allTagsEl = document.getElementById('res-all-tags');
+      const modelInfoEl = document.getElementById('res-model-info');
+
+      scoreEl.innerText = `Manipulation Score: ${score.toFixed(1)}%`;
+      modelInfoEl.innerText = `Engine: ${forensic.model_name || 'ELA-heuristic-baseline'} (${forensic.model_version || 'v0.1'})`;
+
+      if (verdict === 'manipulated') {
+        verdictCard.className = 'border border-red-200 bg-red-50/50 rounded-2xl p-6 space-y-2';
+        verdictBadge.className = 'text-xs font-bold tracking-wider text-red-700 uppercase';
+        verdictBadge.innerText = 'SYNTHETIC / MANIPULATED MEDIA DETECTED';
+      } else if (verdict === 'inconclusive') {
+        verdictCard.className = 'border border-amber-200 bg-amber-50/50 rounded-2xl p-6 space-y-2';
+        verdictBadge.className = 'text-xs font-bold tracking-wider text-amber-700 uppercase';
+        verdictBadge.innerText = 'INCONCLUSIVE — REQUIRES HUMAN REVIEW';
+      } else {
+        verdictCard.className = 'border border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 space-y-2';
+        verdictBadge.className = 'text-xs font-bold tracking-wider text-emerald-700 uppercase';
+        verdictBadge.innerText = 'LIKELY AUTHENTIC MEDIA';
+      }
+
+      // Find primary legal rule tag or fallback to report summary
+      const ruleTagCodes = ['identity_fraud', 'manipulated_media', 'requires_human_review', 'likely_authentic'];
+      const primaryRuleTag = tags.find(t => ruleTagCodes.includes(t.tag_code)) || tags[0];
+
+      primaryTagEl.innerText = primaryRuleTag ? primaryRuleTag.tag_label : 'Forensic Evaluation Complete';
+      tagDescEl.innerText = (primaryRuleTag && primaryRuleTag.rule_description) || report.summary_text || '';
+
+      allTagsEl.innerHTML = tags.map(t => `
+        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-white border border-zinc-300 text-zinc-800">
+          ${t.tag_label} (${Math.round((t.confidence || 0) * 100)}%)
+        </span>
+      `).join('');
+
+      // 5. Biometric & Forensic Telemetry Cards
+      document.getElementById('res-telemetry-faces').innerText = `${faceCount} Detected`;
+      if (faceCount > 0 && (faces[0].deepface_age_estimate || faces[0].deepface_emotion)) {
+        const age = faces[0].deepface_age_estimate ? `~${faces[0].deepface_age_estimate}y` : '';
+        const emo = faces[0].deepface_emotion || '';
+        document.getElementById('res-telemetry-attributes').innerText = [age, emo].filter(Boolean).join(' / ');
+      } else if (faceCount > 0) {
+        document.getElementById('res-telemetry-attributes').innerText = `Conf: ${Math.round(faces[0].detection_confidence * 100)}%`;
+      } else {
+        document.getElementById('res-telemetry-attributes').innerText = 'No Face Region';
+      }
+
+      const anomalyCount = (forensic.anomaly_regions || []).length;
+      document.getElementById('res-telemetry-anomalies').innerText = `${anomalyCount} Block${anomalyCount === 1 ? '' : 's'}`;
+
+      // 6. Philippine Legal Framework (mapping_service.py / legalmap)
+      const legalMappings = report.legal_mappings || [];
+      const legalListEl = document.getElementById('res-legal-list');
+
+      if (legalMappings.length > 0) {
+        legalListEl.innerHTML = legalMappings.map(m => {
+          const p = m.provision || {};
+          const isEnacted = (p.status || '').toLowerCase() === 'enacted';
+          const statusClass = isEnacted
+            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+            : 'bg-amber-100 text-amber-800 border-amber-200';
+          return `
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/60 space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-zinc-900">${p.law_code || 'Statute'} — ${p.section || ''}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded border font-semibold uppercase ${statusClass}">
+                  ${p.status || 'Provision'}
+                </span>
+              </div>
+              <p class="font-medium text-zinc-800">${p.title || ''}</p>
+              <p class="text-zinc-600 leading-relaxed">${m.relevance_explanation || p.summary || ''}</p>
+            </div>
+          `;
+        }).join('');
+      } else {
+        legalListEl.innerHTML = `
+          <p class="text-zinc-500 italic">
+            No statutory violations triggered for this submission verdict. (Ensure <code class="font-mono text-zinc-700">python manage.py seed_legal_provisions</code> has been run).
+          </p>
+        `;
+      }
+
+      // 7. Web Intelligence & Fact-Checks (vision_service.py + factcheck_service.py)
+      const matches = data.reverse_matches || [];
+      const factChecks = data.fact_check_references || [];
+      const webMatchesEl = document.getElementById('res-web-matches');
+      const factChecksEl = document.getElementById('res-fact-checks');
+      document.getElementById('res-web-count').innerText = `${matches.length} web matches · ${factChecks.length} fact-checks`;
+
+      if (matches.length > 0) {
+        webMatchesEl.innerHTML = matches.map(m => `
+          <div class="p-2.5 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-between">
+            <div class="truncate max-w-[75%]">
+              <span class="font-semibold text-zinc-900 block truncate">${m.domain || 'External Source'}</span>
+              <a href="${m.page_url}" target="_blank" class="text-zinc-500 hover:text-black underline truncate block">${m.page_url}</a>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-zinc-200 text-zinc-800 text-[10px] font-mono uppercase shrink-0">
+              ${m.match_type} (${Math.round((m.similarity_score || 0) * 100)}%)
+            </span>
+          </div>
+        `).join('');
+      } else {
+        webMatchesEl.innerHTML = '<p class="text-zinc-500 italic">No exact or visually similar web matches returned.</p>';
+      }
+
+      if (factChecks.length > 0) {
+        factChecksEl.innerHTML = factChecks.map(fc => `
+          <div class="p-2.5 rounded-lg border border-zinc-200 bg-white flex items-start justify-between gap-3">
+            <div>
+              <span class="font-semibold text-zinc-900 block">${fc.publisher_name}: "${fc.claim_text}"</span>
+              <a href="${fc.publisher_url}" target="_blank" class="text-zinc-500 hover:text-black underline text-[11px]">View Claim Review</a>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold uppercase shrink-0">
+              ${fc.rating}
+            </span>
+          </div>
+        `).join('');
+      } else {
+        factChecksEl.innerHTML = '';
+      }
 
       lucide.createIcons();
     }
 
+    // Reset button
     document.getElementById('reset-btn').onclick = () => {
       document.getElementById('results-panel').classList.add('hidden');
       document.getElementById('processing-panel').classList.add('hidden');
@@ -462,23 +709,50 @@
       chosenFileLabel.innerText = 'No file chosen';
     };
 
+    // Export JSON
     document.getElementById('export-json-btn').onclick = () => {
       if (!currentData) return;
       const blob = new Blob([JSON.stringify(currentData, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `AuditTrail-${currentData.id}.json`;
+      a.download = `PixifAI-AuditTrail-${currentData.id}.json`;
       a.click();
     };
 
-    // Modal Events
-    document.getElementById('auth-modal-btn').onclick = () => document.getElementById('auth-modal').classList.remove('hidden');
+    // Export CSV
+    document.getElementById('export-csv-btn').onclick = () => {
+      if (!currentData) return;
+      const report = currentData.report || {};
+      const forensic = currentData.forensic_result || {};
+      const exif = currentData.exif || {};
+      const rows = [
+        ['Field', 'Value'],
+        ['Submission ID', currentData.id],
+        ['Filename', currentData.original_filename],
+        ['SHA-256 Hash', currentData.sha256_hash],
+        ['Overall Verdict', report.overall_verdict || forensic.verdict || ''],
+        ['Manipulation Score', forensic.manipulation_score ?? report.confidence_score ?? ''],
+        ['Faces Detected', (currentData.faces || []).length],
+        ['EXIF Discrepancy', exif.has_discrepancy ? 'Yes' : 'No'],
+        ['Software Tag', exif.software_tag || 'None'],
+        ['Summary', (report.summary_text || '').replace(/"/g, '""')]
+      ];
+      const csvContent = rows.map(r => r.map(v => `"${v ?? ''}"`).join(',')).join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `PixifAI-Report-${currentData.id}.csv`;
+      a.click();
+    };
+
+    // Auth Modal Events
     document.getElementById('close-auth-modal').onclick = () => document.getElementById('auth-modal').classList.add('hidden');
     document.getElementById('jwt-login-form').onsubmit = async (e) => {
       e.preventDefault();
       const u = document.getElementById('login-username').value;
       const p = document.getElementById('login-password').value;
       const err = document.getElementById('auth-error-msg');
+      err.classList.add('hidden');
       try {
         const res = await fetch(`${API_BASE}/token/`, {
           method: 'POST',
@@ -488,14 +762,15 @@
         const d = await res.json();
         if (res.ok) {
           localStorage.setItem('access_token', d.access);
+          localStorage.setItem('refresh_token', d.refresh);
           document.getElementById('auth-modal').classList.add('hidden');
-          document.getElementById('auth-modal-btn').innerText = 'Signed In';
+          syncAuthUI();
         } else {
-          err.innerText = d.detail || 'Login failed';
+          err.innerText = d.detail || 'Invalid analyst credentials.';
           err.classList.remove('hidden');
         }
       } catch (ex) {
-        err.innerText = 'Network error';
+        err.innerText = 'Network error connecting to authentication endpoint.';
         err.classList.remove('hidden');
       }
     };

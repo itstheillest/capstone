@@ -1,16 +1,13 @@
 """
 EXIF metadata extraction and discrepancy detection.
-
-Prefers ExifTool (reads far more tags than Pillow, including maker notes and
-XMP data editing tools leave behind) and falls back to Pillow's built-in EXIF
-reader if the `exiftool` binary isn't installed on the host — so the pipeline
-still runs (with reduced tag coverage) on a machine that skipped that setup
-step.
 """
 
+import logging
 import shutil
 from datetime import datetime
 from PIL.TiffImagePlugin import IFDRational
+
+logger = logging.getLogger(__name__)
 
 KNOWN_EDITOR_TAGS = [
     "photoshop",
@@ -22,6 +19,13 @@ KNOWN_EDITOR_TAGS = [
     "snapseed",
     "faceapp",
     "picsart",
+    "stable diffusion",
+    "midjourney",
+    "dall-e",
+    "dalle",
+    "firefly",
+    "comfyui",
+    "automatic1111",
 ]
 
 
@@ -49,7 +53,7 @@ def _parse_exif_datetime(value):
         return None
     for fmt in ("%Y:%m:%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
         try:
-            return datetime.strptime(str(value), fmt)
+            return datetime.strptime(str(value)[:19], fmt)
         except ValueError:
             continue
     return None
@@ -60,10 +64,6 @@ def _analyze_discrepancies(raw_exif: dict, software_tag: str):
     has_discrepancy = False
 
     if not raw_exif or len(raw_exif) <= 2:
-        # exiftool always returns SourceFile/ExifToolVersion even for images
-        # with genuinely no embedded metadata — anything at or below that is
-        # effectively "no EXIF at all", which is itself a signal (common
-        # after re-saving, screenshotting, or generation by an AI tool).
         has_discrepancy = True
         notes.append("No EXIF metadata present — may indicate stripping, re-saving, or synthetic origin.")
 
@@ -72,7 +72,7 @@ def _analyze_discrepancies(raw_exif: dict, software_tag: str):
         for editor in KNOWN_EDITOR_TAGS:
             if editor in lowered:
                 has_discrepancy = True
-                notes.append(f"Software tag indicates editing tool: '{software_tag}'.")
+                notes.append(f"Software tag indicates editing/generative tool: '{software_tag}'.")
                 break
 
     return has_discrepancy, "; ".join(notes)
@@ -92,32 +92,44 @@ def run_pillow_fallback(image_path: str) -> dict:
     try:
         with Image.open(image_path) as img:
             raw = img.getexif()
-            if not raw:
-                return {}
-            return {ExifTags.TAGS.get(k, str(k)): v for k, v in raw.items()}
-    except Exception:
+            info_software = img.info.get("Software") or img.info.get("parameters") or ""
+            result = {ExifTags.TAGS.get(k, str(k)): v for k, v in raw.items()} if raw else {}
+            if info_software and "Software" not in result:
+                result["Software"] = str(info_software)[:150]
+            return result
+    except Exception as exc:
+        logger.warning("Pillow EXIF extraction failed: %s", exc)
         return {}
 
 
 def extract_exif(image_path: str) -> dict:
     """
-    Returns a dict with normalized fields ready to populate ExifMetadata:
-    raw_exif, camera_make, camera_model, software_tag, capture_timestamp,
-    gps_latitude, gps_longitude, has_discrepancy, discrepancy_notes.
+    Returns a dict with normalized fields ready to populate ExifMetadata.
+    Safely falls back to Pillow if exiftool binary or PyExifTool package is unavailable.
     """
-    used_exiftool = shutil.which("exiftool") is not None
+    used_exiftool = False
+    raw_exif = {}
 
-    if used_exiftool:
-        raw_exif = run_exiftool(image_path)
+    if shutil.which("exiftool") is not None:
+        try:
+            raw_exif = run_exiftool(image_path)
+            used_exiftool = True
+        except Exception as exc:
+            logger.warning("ExifTool execution failed (%s); falling back to Pillow.", exc)
+            raw_exif = run_pillow_fallback(image_path)
     else:
         raw_exif = run_pillow_fallback(image_path)
 
-    # Sanitize dictionary values to ensure full JSON serializability
     raw_exif = _sanitize_value(raw_exif)
 
     camera_make = raw_exif.get("EXIF:Make") or raw_exif.get("Make", "") or ""
     camera_model = raw_exif.get("EXIF:Model") or raw_exif.get("Model", "") or ""
-    software_tag = raw_exif.get("EXIF:Software") or raw_exif.get("Software", "") or ""
+    software_tag = (
+        raw_exif.get("EXIF:Software")
+        or raw_exif.get("PNG:Software")
+        or raw_exif.get("Software", "")
+        or ""
+    )
     capture_raw = raw_exif.get("EXIF:DateTimeOriginal") or raw_exif.get("DateTimeOriginal", "")
     gps_lat = raw_exif.get("EXIF:GPSLatitude") or raw_exif.get("GPSLatitude")
     gps_lon = raw_exif.get("EXIF:GPSLongitude") or raw_exif.get("GPSLongitude")

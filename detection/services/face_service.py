@@ -1,20 +1,5 @@
 """
-Face detection.
-
-Uses a pretrained YOLOv8-face model (lindevs/yolov8-face, trained on
-WIDERFace) — matches the YOLOv8 requirement in your stated stack, and this
-is the same detector that feeds the Tagging Layer's "objects of interest"
-signal (see tagging_service.py).
-
-Weights aren't committed to git (see .gitignore) since model files don't
-belong in version control. Instead this module downloads them once on
-first use and caches them under BASE_DIR/model_weights/, so a fresh clone
-works with zero manual setup beyond having internet access the first time
-a submission is processed.
-
-Falls back to OpenCV's bundled Haar cascade if the download fails (offline,
-GitHub unreachable, etc.) so the pipeline never hard-fails just because the
-weights couldn't be fetched.
+Face detection service (YOLOv8-face with OpenCV Haar Cascade fallback).
 """
 
 import logging
@@ -24,7 +9,8 @@ from django.conf import settings
 
 try:
     import cv2
-    _has_cv2 = True
+    # Verify cv2 actually has its compiled C++ attributes and isn't an empty namespace folder
+    _has_cv2 = hasattr(cv2, "CascadeClassifier") and hasattr(cv2, "data")
 except ImportError:
     _has_cv2 = False
 
@@ -62,13 +48,10 @@ def _load_yolo_face_model():
         weights_path = _ensure_weights_downloaded()
         _yolo_cache["model"] = YOLO(str(weights_path))
         logger.info("Loaded YOLOv8-face model from %s", weights_path)
-    except Exception:
-        logger.warning(
-            "Could not load YOLOv8-face model — falling back to OpenCV Haar cascade. "
-            "Check internet access (first run needs to download weights) and that "
-            "ultralytics is installed.",
-            exc_info=True,
-        )
+    except ImportError:
+        logger.info("ultralytics not installed — using OpenCV Haar cascade for face detection.")
+    except Exception as exc:
+        logger.warning("Could not load YOLOv8-face model (%s) — falling back to Haar cascade.", exc)
 
     return _yolo_cache["model"]
 
@@ -82,7 +65,6 @@ def _detect_faces_yolo(image_path: str, model) -> list[dict]:
         for (x1, y1, x2, y2), conf in zip(boxes, confs):
             detections.append(
                 {
-                    # [top, right, bottom, left] to stay consistent regardless of backend.
                     "bounding_box": [int(y1), int(x2), int(y2), int(x1)],
                     "detection_confidence": round(float(conf), 3),
                 }
@@ -103,9 +85,13 @@ def _detect_faces_haar(image_path: str) -> list[dict]:
         gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), outputRejectLevels=True
     )
 
+    if len(faces) == 0:
+        return []
+
     results = []
     for (x, y, w, h), weight in zip(faces, weights):
-        confidence = min(1.0, max(0.0, float(weight) / 10.0))
+        w_val = float(weight[0]) if hasattr(weight, "__len__") else float(weight)
+        confidence = min(1.0, max(0.5, w_val / 10.0))
         results.append(
             {
                 "bounding_box": [int(y), int(x + w), int(y + h), int(x)],
@@ -118,10 +104,16 @@ def _detect_faces_haar(image_path: str) -> list[dict]:
 def detect_faces(image_path: str) -> list[dict]:
     model = _load_yolo_face_model()
     if model is not None:
-        return _detect_faces_yolo(image_path, model)
+        try:
+            return _detect_faces_yolo(image_path, model)
+        except Exception as exc:
+            logger.warning("YOLO face inference failed (%s); trying fallback.", exc)
+
     if _has_cv2:
-        return _detect_faces_haar(image_path)
-    return [{
-        "bounding_box": [50, 150, 150, 50],
-        "detection_confidence": 0.92
-    }]
+        try:
+            return _detect_faces_haar(image_path)
+        except Exception as exc:
+            logger.warning("Haar cascade inference failed (%s).", exc)
+
+    # Return empty list rather than a hardcoded fake face when no detector is available
+    return []

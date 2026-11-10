@@ -105,7 +105,9 @@ if os.environ.get('USE_POSTGRES') == '1':
             'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
             'HOST': os.environ.get('POSTGRES_HOST', 'localhost'),
             'PORT': os.environ.get('POSTGRES_PORT', '5432'),
-            "OPTIONS": {"sslmode": "require"},
+            "OPTIONS": {
+                "sslmode": os.getenv("POSTGRES_SSLMODE", "prefer"),
+            },
         }
     }
 else:
@@ -142,14 +144,24 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Celery Configuration (Local In-Memory Mode)
-CELERY_BROKER_URL = 'memory://'
-CELERY_RESULT_BACKEND = 'cache+memory://'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-CELERY_TASK_ALWAYS_EAGER = True
+# Celery Configuration
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_URL = os.getenv(
+    "CELERY_BROKER_URL", "redis://localhost:6379/0"
+)
+CELERY_RESULT_BACKEND = os.getenv(
+    "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
+)
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+
+CELERY_TASK_ALWAYS_EAGER = os.getenv(
+    "CELERY_TASK_ALWAYS_EAGER",
+    "true" if DEBUG else "false",
+).lower() in ("true", "1", "t")
 CELERY_TASK_EAGER_PROPAGATES = True
 
 

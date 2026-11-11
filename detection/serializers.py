@@ -122,6 +122,7 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             "report",
             "reverse_matches",
             "fact_check_references",
+            "fact_check_status"
         ]
         read_only_fields = [
             "id",
@@ -193,3 +194,9 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             }
             for t in tag_objs
         ]
+    
+    def get_fact_check_status(self, obj):
+        log = obj.audit_logs.filter(action_type="fact_check").first()
+        if not log:
+            return "pending"
+        return (log.details or {}).get("fact_check_status", "unavailable")

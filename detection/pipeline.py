@@ -195,10 +195,12 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
 
     # 2. Fact Check Lookup
     search_query = context_query
-    references = []
-    if search_query:
-        references = FactCheckService.query_fact_check_tools(search_query)
-        for ref in references:
+    lookup = {"status": "not_searched", "references": []}
+
+    if search_query and search_query.strip():
+        lookup = FactCheckService.query_fact_check_tools(search_query)
+
+        for ref in lookup["references"]:
             FactCheckReference.objects.create(
                 submission=submission,
                 claim_text=ref.get("claim_text", ""),
@@ -215,7 +217,8 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
         action_type,
         {
             "matches_found": len(matches),
-            "fact_checks_found": len(references),
+            "fact_checks_found": len(lookup["references"]),
+            "fact_check_status": lookup["status"],
         },
         actor,
     )

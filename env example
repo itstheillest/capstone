@@ -1,0 +1,40 @@
+# Copy to .env (never commit .env) and fill in your own values.
+
+# --- Django ---
+# Generate with: python -c "import secrets; print(secrets.token_urlsafe(50))"
+# Avoid '$' in the value; Docker Compose treats it as a variable.
+SECRET_KEY=
+# 1 for local development. Leave unset (off) anywhere other people can reach.
+DEBUG=1
+ALLOWED_HOSTS=localhost,127.0.0.1
+# Optional: separate signing key for login tokens (JWT). Falls back to SECRET_KEY.
+# Needs "SIGNING_KEY": os.environ.get("JWT_SIGNING_KEY", SECRET_KEY) in SIMPLE_JWT.
+JWT_SIGNING_KEY=
+
+# --- Docker ---
+# Host port for the web app. Change it only if 8000 is taken on your machine.
+# Needs "${WEB_PORT:-8000}:8000" in docker-compose.yml.
+WEB_PORT=8000
+
+# --- Database ---
+# 0 = SQLite (simplest, local, no Docker). 1 = Postgres.
+USE_POSTGRES=0
+POSTGRES_DB=pixifai
+POSTGRES_USER=pixifai
+POSTGRES_PASSWORD=change-me
+# 'db' when running inside Docker Compose, 'localhost' when running Postgres yourself.
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+# --- Celery / Redis ---
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+# 1 = run the analysis inside the request (no worker needed, handy for quick tests).
+CELERY_TASK_ALWAYS_EAGER=0
+
+# --- External APIs (leave blank to skip that feature) ---
+# Google Fact Check Tools
+FACT_CHECK_API_KEY=
+# Reverse image search
+GOOGLE_API_KEY=
+SERPAPI_API_KEY=

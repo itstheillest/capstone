@@ -103,6 +103,7 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
     report = DetectionReportSerializer(read_only=True)
     reverse_matches = ReverseImageMatchSerializer(many=True, read_only=True)
     fact_check_references = FactCheckReferenceSerializer(many=True, read_only=True)
+    fact_check_status = serializers.SerializerMethodField()
 
     class Meta:
         model = ImageSubmission

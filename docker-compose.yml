@@ -6,9 +6,15 @@ services:
     environment:
       POSTGRES_DB: pixifai
       POSTGRES_USER: pixifai
-      POSTGRES_PASSWORD: pixifaipassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pixifai -d pixifai"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   redis:
     image: redis:7-alpine
@@ -17,27 +23,33 @@ services:
 
   web:
     build: .
+    env_file:
+      - .env
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --noreload"
     volumes:
       - .:/app
     ports:
-      - "8000:8000"
+      - "${WEB_PORT:-8000}:8000"
     environment:
       - USE_POSTGRES=1
       - POSTGRES_HOST=db
       - POSTGRES_DB=pixifai
       - POSTGRES_USER=pixifai
-      - POSTGRES_PASSWORD=pixifaipassword
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_SSLMODE=prefer
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - FACT_CHECK_API_KEY=${FACT_CHECK_API_KEY}
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   celery:
     build: .
+    env_file:
+      - .env
     command: celery -A pixifai worker -l info --concurrency=2
     volumes:
       - .:/app
@@ -49,11 +61,13 @@ services:
       - POSTGRES_HOST=db
       - POSTGRES_DB=pixifai
       - POSTGRES_USER=pixifai
-      - POSTGRES_PASSWORD=pixifaipassword
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_SSLMODE=prefer
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
       - FACT_CHECK_API_KEY=${FACT_CHECK_API_KEY}
     depends_on:
-      - web
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started

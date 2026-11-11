@@ -31,6 +31,7 @@ services:
       - POSTGRES_SSLMODE=prefer
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - FACT_CHECK_API_KEY=${FACT_CHECK_API_KEY}
     depends_on:
       - db
       - redis
@@ -52,6 +53,7 @@ services:
       - POSTGRES_SSLMODE=prefer
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - FACT_CHECK_API_KEY=${FACT_CHECK_API_KEY}
     depends_on:
       - web
       - redis

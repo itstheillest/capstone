@@ -714,7 +714,16 @@
           </div>
         `).join('');
       } else {
-        factChecksEl.innerHTML = '';
+        const messages = {
+          no_results: 'No matching published fact-checks were found.',
+          unavailable: 'Fact-check lookup is unavailable. No fact-check result was produced.',
+          not_searched: 'No fact-check search was run for this image.',
+          pending: 'Fact-check lookup status is not available yet.'
+        };
+
+        factChecksEl.textContent =
+          messages[data.fact_check_status] ||
+          'Fact-check lookup status is unknown.';
       }
 
       lucide.createIcons();

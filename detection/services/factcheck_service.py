@@ -67,51 +67,66 @@ class FactCheckService:
         return results
 
     @staticmethod
-    def query_fact_check_tools(query_text: str) -> list[dict]:
-        """
-        Queries the Google Fact Check Tools API for published claim reviews.
-        Returns only claim reviews returned by Google's API. Missing keys,
-        empty results, and API failures produce no references rather than
-        fabricated claims or links.
-        """
-        api_key = getattr(settings, "FACT_CHECK_API_KEY", os.environ.get("FACT_CHECK_API_KEY"))
+    def query_fact_check_tools(query_text: str) -> dict:
+        api_key = (
+            getattr(settings, "FACT_CHECK_API_KEY", None)
+            or os.environ.get("FACT_CHECK_API_KEY")
+        )
+
+        if not query_text or not query_text.strip():
+            return {"status": "not_searched", "references": []}
+
         if not api_key:
-            logger.warning("Google Fact Check API key missing; skipping fact-check lookup.")
-            return []
+            logger.warning("Fact-check lookup unavailable: API key is not configured.")
+            return {"status": "unavailable", "references": []}
 
         url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
         params = {
-            "query": query_text if query_text and query_text.strip() else "image manipulation",
+            "query": query_text.strip(),
             "key": api_key,
             "languageCode": "en",
+            "pageSize": 5,
         }
 
-        references = []
         try:
-            response = requests.get(url, params=params, timeout=5)
-            if response.status_code == 200:
-                data = response.json()
-                for claim in data.get("claims", [])[:5]:
-                    claim_text = claim.get("text", "")
-                    claimant = claim.get("claimant", "")
-                    for review in claim.get("claimReview", []):
-                        publisher = review.get("publisher", {}).get("name", "Unknown")
-                        pub_url = review.get("url", "")
-                        rating = review.get("textualRating", "Unrated")
+            response = requests.get(url, params=params, timeout=10)
 
-                        references.append({
-                            "claim_text": claim_text,
-                            "claimant": claimant,
-                            "publisher_name": publisher,
-                            "publisher_url": pub_url,
-                            "rating": rating,
-                        })
+            if response.status_code != 200:
+                # Don't log the request URL: it contains the API key.
+                logger.warning(
+                    "Google Fact Check API returned HTTP %s.",
+                    response.status_code,
+                )
+                return {"status": "unavailable", "references": []}
 
-            if not references:
-                logger.info("Google Fact Check API returned no matching claim reviews.")
+            references = []
+            data = response.json()
 
-        except Exception as exc:
-            logger.error("Fact Check Tools API query error (%s).", exc)
-            return []
+            for claim in data.get("claims", []):
+                for review in claim.get("claimReview", []) or []:
+                    publisher_url = review.get("url", "")
+                    if not publisher_url.startswith(("https://", "http://")):
+                        continue
 
-        return references
+                    references.append({
+                        "claim_text": claim.get("text", ""),
+                        "claimant": claim.get("claimant", ""),
+                        "publisher_name": (
+                            review.get("publisher", {}).get("name", "Unknown")
+                        ),
+                        "publisher_url": publisher_url,
+                        "rating": review.get("textualRating", "Unrated"),
+                    })
+
+            return {
+                "status": "found" if references else "no_results",
+                "references": references[:5],
+            }
+
+        except (requests.RequestException, ValueError, TypeError) as exc:
+            # Log the exception type only; request errors can contain the API URL.
+            logger.warning(
+                "Google Fact Check lookup failed (%s).",
+                type(exc).__name__,
+            )
+            return {"status": "unavailable", "references": []}

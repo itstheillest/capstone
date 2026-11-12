@@ -23,6 +23,7 @@ env/
 *.h5
 *.onnx
 !model_weights/efficientnet_b0_forensic_clean.pth
+!model_weights/yolov8n-face-lindevs.pt
 
 # IDE
 .vscode/

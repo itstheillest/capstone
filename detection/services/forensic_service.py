@@ -35,8 +35,13 @@ except ImportError:
     device = None
     transform = None
 
+# Module-level values; these are filled when the model loads.
 _cnn_model = None
-CNN_WEIGHTS_PATH = Path(settings.BASE_DIR) / "model_weights" / "efficientnet_b0_forensic.pth"
+_cnn_metadata = None
+_cnn_transform = None
+
+#bsgcasa/ai-vs-real-image-detector built on EfficientNet-B0, trained on 14k real vs AI-generated images. Sourced from Hugging Face https://huggingface.co/bsgcasa/ai-vs-real-image-detector
+CNN_WEIGHTS_PATH = Path(settings.BASE_DIR) / "model_weights" / "efficientnet_b0_forensic_clean.pth"
 
 ELA_QUALITY = 90
 ANOMALY_BLOCK_SIZE = 32
@@ -62,21 +67,47 @@ AI_SIGNATURE_KEYWORDS = [
 
 
 def get_cnn_model():
-    global _cnn_model
+    global _cnn_model, _cnn_metadata, _cnn_transform
+
     if not _has_torch or not CNN_WEIGHTS_PATH.exists():
         return None
+
     if _cnn_model is None:
-        try:
-            model = models.efficientnet_b0(weights=None)
-            model.classifier[1] = torch.nn.Linear(model.classifier[1].in_features, 2)
-            state_dict = torch.load(str(CNN_WEIGHTS_PATH), map_location=device, weights_only=True)
-            model.load_state_dict(state_dict)
-            model.to(device)
-            model.eval()
-            _cnn_model = model
-        except Exception as exc:
-            logger.warning("Failed to load EfficientNet forensic weights: %s", exc)
-            return None
+        checkpoint = torch.load(
+            str(CNN_WEIGHTS_PATH),
+            map_location="cpu",
+            weights_only=True,
+        )
+
+        class_names = checkpoint["class_names"]
+        if set(class_names) != {"ai_generated", "real"}:
+            raise ValueError(f"Unexpected classifier labels: {class_names}")
+
+        model = models.efficientnet_b0(weights=None)
+        in_features = model.classifier[1].in_features
+        model.classifier = torch.nn.Sequential(
+            torch.nn.Dropout(0.4),
+            torch.nn.Linear(in_features, len(class_names)),
+        )
+        model.load_state_dict(checkpoint["model_state_dict"], strict=True)
+        model.to(device)
+        model.eval()
+
+        image_size = int(checkpoint["img_size"])
+        _cnn_transform = transforms.Compose([
+            transforms.Resize((image_size, image_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                checkpoint["normalize_mean"],
+                checkpoint["normalize_std"],
+            ),
+        ])
+        _cnn_metadata = {
+            "class_names": class_names,
+            "threshold": float(checkpoint["threshold"]),
+        }
+        _cnn_model = model
+
     return _cnn_model
 
 
@@ -216,29 +247,32 @@ def analyze(image_path: str) -> dict:
     combined_regions = ela_regions if len(ela_regions) >= len(synth_regions) else synth_regions
 
     model = get_cnn_model()
-    if model is not None and transform is not None:
-        image = Image.open(image_path).convert("RGB")
-        tensor = transform(image).unsqueeze(0).to(device)
 
-        with torch.no_grad():
-            outputs = model(tensor)
-            probabilities = torch.nn.functional.softmax(outputs, dim=1)[0]
-
-        ai_prob = float(probabilities[1])
-        manipulation_score = round(max(ai_prob, (synth_score * 0.6) + (ela_score * 0.4)), 4)
-        model_name = "EfficientNet-B0 + Spectral/ELA Hybrid"
-        model_version = "1.1.0"
-    else:
+    if model is None or _cnn_transform is None or _cnn_metadata is None:
         manipulation_score = round(max(ela_score, synth_score), 3)
+        verdict = "inconclusive"
         model_name = "PixifAI Spectral + ELA Heuristic Engine"
         model_version = "v1.1"
-
-    if manipulation_score >= 0.5:
-        verdict = "manipulated"
-    elif manipulation_score >= 0.25:
-        verdict = "inconclusive"
     else:
-        verdict = "authentic"
+        image = Image.open(image_path).convert("RGB")
+        tensor = _cnn_transform(image).unsqueeze(0).to(device)
+
+        with torch.inference_mode():
+            logits = model(tensor)
+            probabilities = torch.nn.functional.softmax(logits, dim=1)[0]
+
+        class_names = _cnn_metadata["class_names"]
+        ai_index = class_names.index("ai_generated")
+        real_index = class_names.index("real")
+
+        ai_probability = float(probabilities[ai_index])
+        real_probability = float(probabilities[real_index])
+        real_threshold = _cnn_metadata["threshold"]
+
+        manipulation_score = ai_probability
+        verdict = "likely real" if real_probability >= real_threshold else "likely AI-generated"
+        model_name = "EfficientNet-B0 AI-vs-Real"
+        model_version = "candidate-1"
 
     return {
         "model_name": model_name,

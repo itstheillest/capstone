@@ -608,7 +608,7 @@
       if (verdict === 'manipulated') {
         verdictCard.className = 'border border-red-200 bg-red-50/50 rounded-2xl p-6 space-y-2';
         verdictBadge.className = 'text-xs font-bold tracking-wider text-red-700 uppercase';
-        verdictBadge.innerText = 'SYNTHETIC / MANIPULATED MEDIA DETECTED';
+        verdictBadge.innerText = 'LIKELY AI-GENERATED / MANIPULATED MEDIA';
       } else if (verdict === 'inconclusive') {
         verdictCard.className = 'border border-amber-200 bg-amber-50/50 rounded-2xl p-6 space-y-2';
         verdictBadge.className = 'text-xs font-bold tracking-wider text-amber-700 uppercase';
@@ -616,7 +616,7 @@
       } else {
         verdictCard.className = 'border border-emerald-200 bg-emerald-50/50 rounded-2xl p-6 space-y-2';
         verdictBadge.className = 'text-xs font-bold tracking-wider text-emerald-700 uppercase';
-        verdictBadge.innerText = 'LIKELY AUTHENTIC MEDIA';
+        verdictBadge.innerText = 'LIKELY REAL';
       }
 
       // Find primary legal rule tag or fallback to report summary

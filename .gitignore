@@ -22,7 +22,7 @@ env/
 *.pth
 *.h5
 *.onnx
-/models/weights/
+!model_weights/efficientnet_b0_forensic_clean.pth
 
 # IDE
 .vscode/

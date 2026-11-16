@@ -273,6 +273,11 @@ def analyze(image_path: str) -> dict:
         verdict = "likely real" if real_probability >= real_threshold else "likely AI-generated"
         model_name = "EfficientNet-B0 AI-vs-Real"
         model_version = "candidate-1"
+        
+        logger.info(
+            "Classifier check: model=%s ai_probability=%.4f real_probability=%.4f real_threshold=%.4f verdict=%s",
+            model_name, ai_probability, real_probability, real_threshold, verdict,
+        )
 
     return {
         "model_name": model_name,

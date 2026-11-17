@@ -38,3 +38,6 @@ FACT_CHECK_API_KEY=
 # Reverse image search
 GOOGLE_API_KEY=
 SERPAPI_API_KEY=
+
+#run python -c "import secrets; print(secrets.token_urlsafe(32))" in terminal
+REDIS_PASSWORD=<the generated value>

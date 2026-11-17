@@ -99,6 +99,11 @@ docker compose ps
 ```
 *Ensure `web`, `celery`, `db`, and `redis` containers display `Up` / `running` status.*
 
+Windows + conda only: if you see "OMP: Error #15 ... libiomp5md.dll already initialized":
+    $env:KMP_DUPLICATE_LIB_OK="TRUE"; $env:OMP_NUM_THREADS="1"
+    
+or run through Docker, which usually avoids it.
+
 ---
 
 ## Authentication & API Documentation

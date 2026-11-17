@@ -1,0 +1,701 @@
+path,label,generator,source,width,height,real_prob
+testset\ai\0000_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.6479910612106323
+testset\ai\0001_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.3911629617214203
+testset\ai\0002_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9973517656326294
+testset\ai\0003_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,6.343005952658132e-05
+testset\ai\0004_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.08157803863286972
+testset\real\0005_real_abstract.png,real,real,abstract,1024,1024,0.4675716161727905
+testset\ai\0006_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.0010761566227301955
+testset\real\0007_real_abstract.png,real,real,abstract,1024,1024,0.0003458405553828925
+testset\ai\0008_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.4848610460758209
+testset\real\0009_real_abstract.png,real,real,abstract,1024,1024,0.01276053860783577
+testset\ai\0010_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.0001603087002877146
+testset\ai\0011_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.8877636194229126
+testset\real\0012_real_pokemon.png,real,real,pokemon,300,300,0.014029398560523987
+testset\ai\0013_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,1.0
+testset\ai\0014_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9944091439247131
+testset\real\0015_real_coco.png,real,real,coco,640,480,1.0
+testset\real\0016_real_food101.png,real,real,food101,512,383,0.9999998807907104
+testset\real\0017_real_pokemon.png,real,real,pokemon,300,300,0.001735256751999259
+testset\real\0018_real_food101.png,real,real,food101,512,306,0.999948263168335
+testset\ai\0019_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,5.095755568618188e-06
+testset\ai\0020_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.003356955014169216
+testset\real\0021_real_furniture.png,real,real,furniture,682,1024,0.9995131492614746
+testset\ai\0022_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,4.1312673602078576e-06
+testset\ai\0023_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.417514340573689e-06
+testset\real\0024_real_portraits.png,real,real,portraits,1024,1024,0.9998168349266052
+testset\ai\0025_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.01641550101339817
+testset\real\0026_real_food101.png,real,real,food101,512,512,1.0
+testset\real\0027_real_food101.png,real,real,food101,512,512,0.9999796152114868
+testset\real\0028_real_pokemon.png,real,real,pokemon,300,300,0.0059446548111736774
+testset\real\0029_real_abstract.png,real,real,abstract,1024,1024,0.009021949954330921
+testset\real\0030_real_portraits.png,real,real,portraits,1024,1024,0.9996217489242554
+testset\ai\0031_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.013851461932063103
+testset\real\0032_real_portraits.png,real,real,portraits,1024,1024,0.9995403289794922
+testset\ai\0033_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,4.156394695087329e-08
+testset\real\0034_real_stanford_cars.png,real,real,stanford_cars,1280,929,0.9999313354492188
+testset\real\0035_real_imagenet.png,real,real,imagenet,797,660,0.9978908896446228
+testset\real\0036_real_abstract.png,real,real,abstract,1024,1024,0.2282963991165161
+testset\ai\0037_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9746999740600586
+testset\ai\0038_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9992464780807495
+testset\ai\0039_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.8850312232971191
+testset\real\0040_real_wikiart.png,real,real,wikiart,1382,1836,0.9882664084434509
+testset\real\0041_real_stanford_cars.png,real,real,stanford_cars,1024,640,0.3120471239089966
+testset\real\0042_real_portraits.png,real,real,portraits,1024,1024,0.9999998807907104
+testset\real\0043_real_wikiart.png,real,real,wikiart,1382,1818,0.1905168890953064
+testset\real\0044_real_wikiart.png,real,real,wikiart,1382,2099,0.5952605605125427
+testset\real\0045_real_abstract.png,real,real,abstract,1024,1024,0.008974837139248848
+testset\ai\0046_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9787797331809998
+testset\ai\0047_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.48984235525131226
+testset\real\0048_real_wikiart.png,real,real,wikiart,1712,1382,0.0041909716092050076
+testset\real\0049_real_imagenet.png,real,real,imagenet,375,500,0.9998719692230225
+testset\ai\0050_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,1.4137492144072894e-05
+testset\ai\0051_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9771788120269775
+testset\real\0052_real_furniture.png,real,real,furniture,683,1024,0.999998927116394
+testset\real\0053_real_pokemon.png,real,real,pokemon,300,300,0.014764792285859585
+testset\ai\0054_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.451951892050829e-09
+testset\ai\0055_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,3.399728711883654e-07
+testset\ai\0056_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,7.612592298755771e-07
+testset\ai\0057_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.000396101240767166
+testset\ai\0058_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.512751579284668
+testset\real\0059_real_imagenet.png,real,real,imagenet,500,491,0.9999998807907104
+testset\real\0060_real_coco.png,real,real,coco,640,426,0.9999998807907104
+testset\ai\0061_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.3976655900478363
+testset\real\0062_real_abstract.png,real,real,abstract,1024,1024,0.8315984606742859
+testset\real\0063_real_food101.png,real,real,food101,512,512,0.9996383190155029
+testset\real\0064_real_pokemon.png,real,real,pokemon,300,300,0.021755065768957138
+testset\real\0065_real_wikiart.png,real,real,wikiart,2002,1382,0.9696894884109497
+testset\real\0066_real_abstract.png,real,real,abstract,1024,1024,0.7200430035591125
+testset\ai\0067_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,2.407076482580095e-10
+testset\real\0068_real_furniture.png,real,real,furniture,682,1024,0.9997078776359558
+testset\real\0069_real_portraits.png,real,real,portraits,1024,1024,0.9999743700027466
+testset\real\0070_real_abstract.png,real,real,abstract,1024,1024,0.5061882734298706
+testset\ai\0071_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.0010021347552537918
+testset\real\0072_real_wikiart.png,real,real,wikiart,1827,1382,0.005438748747110367
+testset\ai\0073_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.5466291308403015
+testset\ai\0074_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,8.491348853567615e-05
+testset\ai\0075_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.06553398817777634
+testset\real\0076_real_coco.png,real,real,coco,640,428,0.43585970997810364
+testset\real\0077_real_stanford_cars.png,real,real,stanford_cars,800,600,0.9999426603317261
+testset\ai\0078_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.29170337319374084
+testset\real\0079_real_portraits.png,real,real,portraits,1024,1024,0.9999998807907104
+testset\ai\0080_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9983458518981934
+testset\ai\0081_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.4652610123157501
+testset\real\0082_real_pokemon.png,real,real,pokemon,300,300,0.01679462194442749
+testset\ai\0083_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.007774026598781347
+testset\real\0084_real_food101.png,real,real,food101,512,512,1.0
+testset\ai\0085_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9999998807907104
+testset\real\0086_real_imagenet.png,real,real,imagenet,689,1024,0.9957774877548218
+testset\real\0087_real_furniture.png,real,real,furniture,682,1024,0.6487241983413696
+testset\real\0088_real_pokemon.png,real,real,pokemon,466,502,0.0006269440054893494
+testset\real\0089_real_pokemon.png,real,real,pokemon,300,300,0.01186305470764637
+testset\real\0090_real_coco.png,real,real,coco,640,480,0.9999982118606567
+testset\real\0091_real_abstract.png,real,real,abstract,1024,1024,0.0036759180948138237
+testset\real\0092_real_stanford_cars.png,real,real,stanford_cars,623,389,0.9991459846496582
+testset\real\0093_real_wikiart.png,real,real,wikiart,1382,2166,0.9999879598617554
+testset\real\0094_real_coco.png,real,real,coco,640,424,0.9999127388000488
+testset\ai\0095_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,2.5494191504549235e-06
+testset\real\0096_real_stanford_cars.png,real,real,stanford_cars,610,404,0.9999445676803589
+testset\real\0097_real_wikiart.png,real,real,wikiart,1382,1727,0.33606529235839844
+testset\ai\0098_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9995844960212708
+testset\ai\0099_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.06497199088335037
+testset\real\0100_real_imagenet.png,real,real,imagenet,500,333,0.25525447726249695
+testset\ai\0101_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,3.3974383306656364e-09
+testset\ai\0102_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9242449402809143
+testset\real\0103_real_portraits.png,real,real,portraits,1024,1024,0.9999188184738159
+testset\real\0104_real_stanford_cars.png,real,real,stanford_cars,800,600,0.7668605446815491
+testset\real\0105_real_abstract.png,real,real,abstract,1024,1024,0.0015425501624122262
+testset\real\0106_real_pokemon.png,real,real,pokemon,578,774,0.0003744762798305601
+testset\real\0107_real_coco.png,real,real,coco,591,640,0.9999897480010986
+testset\real\0108_real_coco.png,real,real,coco,640,428,0.999995231628418
+testset\ai\0109_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.031949300318956375
+testset\real\0110_real_food101.png,real,real,food101,384,512,0.9999998807907104
+testset\real\0111_real_imagenet.png,real,real,imagenet,500,375,1.0
+testset\ai\0112_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.06688037514686584
+testset\real\0113_real_abstract.png,real,real,abstract,1024,1024,0.06464636325836182
+testset\real\0114_real_furniture.png,real,real,furniture,683,1024,0.9999655485153198
+testset\real\0115_real_portraits.png,real,real,portraits,1024,1024,0.9979152083396912
+testset\real\0116_real_imagenet.png,real,real,imagenet,500,375,0.833135724067688
+testset\real\0117_real_imagenet.png,real,real,imagenet,347,500,0.9999991655349731
+testset\real\0118_real_food101.png,real,real,food101,512,512,0.9999898672103882
+testset\real\0119_real_stanford_cars.png,real,real,stanford_cars,590,424,0.3661606013774872
+testset\real\0120_real_portraits.png,real,real,portraits,1024,1024,0.9999994039535522
+testset\real\0121_real_imagenet.png,real,real,imagenet,500,381,0.9840667247772217
+testset\real\0122_real_furniture.png,real,real,furniture,682,1024,0.9999997615814209
+testset\real\0123_real_coco.png,real,real,coco,640,416,0.9999996423721313
+testset\ai\0124_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0006029086653143167
+testset\ai\0125_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.11630961298942566
+testset\ai\0126_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0009543970227241516
+testset\ai\0127_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,1.0336377272324171e-05
+testset\real\0128_real_portraits.png,real,real,portraits,1024,1024,0.9999988079071045
+testset\real\0129_real_pokemon.png,real,real,pokemon,300,300,0.009419772773981094
+testset\ai\0130_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,4.871602141065523e-05
+testset\ai\0131_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9571877717971802
+testset\real\0132_real_abstract.png,real,real,abstract,1024,1024,0.1734454482793808
+testset\real\0133_real_stanford_cars.png,real,real,stanford_cars,630,394,0.9999996423721313
+testset\real\0134_real_imagenet.png,real,real,imagenet,500,375,0.9999998807907104
+testset\real\0135_real_furniture.png,real,real,furniture,678,1024,0.9939086437225342
+testset\real\0136_real_pokemon.png,real,real,pokemon,800,733,0.07726440578699112
+testset\real\0137_real_abstract.png,real,real,abstract,1024,1024,0.00044506415724754333
+testset\ai\0138_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,3.1338488042820245e-05
+testset\real\0139_real_wikiart.png,real,real,wikiart,1382,1734,0.9782016277313232
+testset\ai\0140_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9552437663078308
+testset\real\0141_real_wikiart.png,real,real,wikiart,2211,1382,0.7956520915031433
+testset\ai\0142_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.00036816103965975344
+testset\ai\0143_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9384987950325012
+testset\real\0144_real_pokemon.png,real,real,pokemon,300,300,0.00418907729908824
+testset\real\0145_real_furniture.png,real,real,furniture,685,1024,0.9993840456008911
+testset\real\0146_real_stanford_cars.png,real,real,stanford_cars,960,641,0.9735075235366821
+testset\real\0147_real_portraits.png,real,real,portraits,1024,1024,0.9999842643737793
+testset\real\0148_real_stanford_cars.png,real,real,stanford_cars,1333,888,0.00089677405776456
+testset\ai\0149_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.040512632578611374
+testset\ai\0150_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.04750474542379379
+testset\real\0151_real_abstract.png,real,real,abstract,1024,1024,0.8334195613861084
+testset\ai\0152_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.00724624190479517
+testset\real\0153_real_imagenet.png,real,real,imagenet,500,400,0.6485273838043213
+testset\real\0154_real_coco.png,real,real,coco,640,426,0.9997275471687317
+testset\real\0155_real_furniture.png,real,real,furniture,437,1024,0.9973336458206177
+testset\ai\0156_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9554476737976074
+testset\real\0157_real_abstract.png,real,real,abstract,1024,1024,0.012025188654661179
+testset\real\0158_real_stanford_cars.png,real,real,stanford_cars,608,369,0.7865861654281616
+testset\real\0159_real_stanford_cars.png,real,real,stanford_cars,1280,782,0.9930096864700317
+testset\ai\0160_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.16003891825675964
+testset\ai\0161_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.020171336829662323
+testset\ai\0162_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.999975323677063
+testset\real\0163_real_food101.png,real,real,food101,512,512,0.9996820688247681
+testset\real\0164_real_abstract.png,real,real,abstract,1024,1024,0.023754935711622238
+testset\ai\0165_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.0008346528047695756
+testset\real\0166_real_wikiart.png,real,real,wikiart,1819,1382,0.9999485015869141
+testset\real\0167_real_coco.png,real,real,coco,640,480,0.9998435974121094
+testset\real\0168_real_furniture.png,real,real,furniture,683,1024,0.9999953508377075
+testset\real\0169_real_abstract.png,real,real,abstract,1024,1024,0.03695308044552803
+testset\real\0170_real_portraits.png,real,real,portraits,1024,1024,0.9999998807907104
+testset\real\0171_real_wikiart.png,real,real,wikiart,2136,1382,0.999974250793457
+testset\real\0172_real_imagenet.png,real,real,imagenet,500,375,0.9999997615814209
+testset\real\0173_real_stanford_cars.png,real,real,stanford_cars,786,492,0.9915803074836731
+testset\real\0174_real_stanford_cars.png,real,real,stanford_cars,640,360,0.9941778182983398
+testset\real\0175_real_abstract.png,real,real,abstract,1024,1024,0.1126939058303833
+testset\ai\0176_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.027686739340424538
+testset\ai\0177_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,1.8542832549428567e-05
+testset\real\0178_real_abstract.png,real,real,abstract,1024,1024,0.0014124789740890265
+testset\ai\0179_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.6652831435203552
+testset\ai\0180_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.007395263761281967
+testset\real\0181_real_furniture.png,real,real,furniture,632,1024,0.9998995065689087
+testset\ai\0182_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.24820052087306976
+testset\real\0183_real_stanford_cars.png,real,real,stanford_cars,1280,850,0.8430801033973694
+testset\real\0184_real_coco.png,real,real,coco,640,480,0.9999994039535522
+testset\real\0185_real_imagenet.png,real,real,imagenet,500,333,0.9999998807907104
+testset\real\0186_real_food101.png,real,real,food101,289,512,0.9999998807907104
+testset\real\0187_real_imagenet.png,real,real,imagenet,500,392,0.9998745918273926
+testset\real\0188_real_wikiart.png,real,real,wikiart,1382,1710,0.02198237180709839
+testset\ai\0189_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.24481679499149323
+testset\real\0190_real_imagenet.png,real,real,imagenet,500,333,0.9934564232826233
+testset\real\0191_real_portraits.png,real,real,portraits,1024,1024,0.9999282360076904
+testset\ai\0192_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.07640156149864197
+testset\real\0193_real_stanford_cars.png,real,real,stanford_cars,1600,900,0.738676130771637
+testset\ai\0194_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9764149188995361
+testset\ai\0195_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.8301347494125366
+testset\real\0196_real_coco.png,real,real,coco,640,425,0.2141897827386856
+testset\real\0197_real_pokemon.png,real,real,pokemon,300,300,0.0003282095130998641
+testset\real\0198_real_stanford_cars.png,real,real,stanford_cars,800,533,0.75615394115448
+testset\ai\0199_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.5399296283721924
+testset\real\0200_real_portraits.png,real,real,portraits,1024,1024,0.9999995231628418
+testset\ai\0201_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.11038791388273239
+testset\real\0202_real_wikiart.png,real,real,wikiart,1382,1405,0.021519135683774948
+testset\real\0203_real_wikiart.png,real,real,wikiart,1381,2221,0.9601202607154846
+testset\ai\0204_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.02992967888712883
+testset\real\0205_real_imagenet.png,real,real,imagenet,500,289,0.9777823686599731
+testset\real\0206_real_food101.png,real,real,food101,512,512,1.0
+testset\ai\0207_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.0005570612265728414
+testset\real\0208_real_portraits.png,real,real,portraits,1024,1024,0.9994264841079712
+testset\real\0209_real_wikiart.png,real,real,wikiart,1382,1811,0.9992159605026245
+testset\ai\0210_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.0283254596288316e-05
+testset\real\0211_real_coco.png,real,real,coco,640,488,1.0
+testset\real\0212_real_stanford_cars.png,real,real,stanford_cars,536,342,0.9997889399528503
+testset\ai\0213_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,4.1875664464896545e-05
+testset\real\0214_real_furniture.png,real,real,furniture,1024,680,0.9998917579650879
+testset\real\0215_real_pokemon.png,real,real,pokemon,1269,1378,3.489982702831185e-08
+testset\real\0216_real_stanford_cars.png,real,real,stanford_cars,586,389,0.043491024523973465
+testset\ai\0217_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,5.414545739768073e-06
+testset\ai\0218_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,3.893530447385274e-05
+testset\real\0219_real_food101.png,real,real,food101,512,384,1.0
+testset\real\0220_real_furniture.png,real,real,furniture,726,1024,0.9979287385940552
+testset\real\0221_real_portraits.png,real,real,portraits,1024,1024,0.9981853365898132
+testset\ai\0222_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.02758334018290043
+testset\real\0223_real_coco.png,real,real,coco,500,333,0.9999914169311523
+testset\real\0224_real_food101.png,real,real,food101,512,384,0.9999946355819702
+testset\ai\0225_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.00039503592415712774
+testset\ai\0226_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,8.50522264954634e-05
+testset\real\0227_real_coco.png,real,real,coco,640,480,1.0
+testset\ai\0228_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9730441570281982
+testset\ai\0229_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.0017663610633462667
+testset\ai\0230_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.06700664013624191
+testset\real\0231_real_wikiart.png,real,real,wikiart,1908,1382,0.9999982118606567
+testset\real\0232_real_furniture.png,real,real,furniture,632,1024,0.9999674558639526
+testset\real\0233_real_food101.png,real,real,food101,512,512,0.9999366998672485
+testset\real\0234_real_coco.png,real,real,coco,640,426,0.9939271807670593
+testset\real\0235_real_imagenet.png,real,real,imagenet,375,500,0.9998602867126465
+testset\real\0236_real_food101.png,real,real,food101,512,288,1.0
+testset\ai\0237_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.012333416379988194
+testset\real\0238_real_furniture.png,real,real,furniture,1024,680,0.9997296929359436
+testset\ai\0239_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.07771763950586319
+testset\real\0240_real_coco.png,real,real,coco,640,481,0.9999842643737793
+testset\ai\0241_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.00026882707607001066
+testset\real\0242_real_portraits.png,real,real,portraits,1024,1024,0.9948451519012451
+testset\real\0243_real_portraits.png,real,real,portraits,1024,1024,0.9998975992202759
+testset\real\0244_real_furniture.png,real,real,furniture,675,1024,0.9999293088912964
+testset\real\0245_real_abstract.png,real,real,abstract,1024,1024,7.204068424471188e-06
+testset\real\0246_real_stanford_cars.png,real,real,stanford_cars,563,309,0.9406552314758301
+testset\real\0247_real_furniture.png,real,real,furniture,683,1024,0.8903875946998596
+testset\real\0248_real_wikiart.png,real,real,wikiart,1382,1761,0.13404083251953125
+testset\real\0249_real_coco.png,real,real,coco,500,374,0.9999983310699463
+testset\real\0250_real_furniture.png,real,real,furniture,678,1024,0.9999995231628418
+testset\real\0251_real_furniture.png,real,real,furniture,683,1024,0.9999701976776123
+testset\real\0252_real_abstract.png,real,real,abstract,1024,1024,7.071192521834746e-05
+testset\real\0253_real_abstract.png,real,real,abstract,1024,1024,8.480117685394362e-05
+testset\ai\0254_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.31188318133354187
+testset\ai\0255_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.8654847741127014
+testset\ai\0256_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.08140861988067627
+testset\real\0257_real_pokemon.png,real,real,pokemon,300,300,0.015978971496224403
+testset\real\0258_real_pokemon.png,real,real,pokemon,300,300,0.036914288997650146
+testset\ai\0259_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.005412020720541477
+testset\ai\0260_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9995284080505371
+testset\real\0261_real_wikiart.png,real,real,wikiart,1825,1382,0.8200047016143799
+testset\real\0262_real_portraits.png,real,real,portraits,1024,1024,0.9710847735404968
+testset\real\0263_real_coco.png,real,real,coco,640,536,0.9982064962387085
+testset\real\0264_real_stanford_cars.png,real,real,stanford_cars,1600,1200,0.7522960901260376
+testset\real\0265_real_stanford_cars.png,real,real,stanford_cars,1032,774,0.8760026097297668
+testset\real\0266_real_coco.png,real,real,coco,500,375,0.9999967813491821
+testset\ai\0267_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.8487655520439148
+testset\real\0268_real_food101.png,real,real,food101,512,384,0.9999970197677612
+testset\real\0269_real_furniture.png,real,real,furniture,682,1024,0.9999868869781494
+testset\ai\0270_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0011673533590510488
+testset\real\0271_real_coco.png,real,real,coco,640,427,0.9999312162399292
+testset\real\0272_real_pokemon.png,real,real,pokemon,275,300,0.015425051562488079
+testset\ai\0273_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.991609513759613
+testset\real\0274_real_pokemon.png,real,real,pokemon,300,300,0.0013511741999536753
+testset\real\0275_real_stanford_cars.png,real,real,stanford_cars,580,435,0.9812172651290894
+testset\real\0276_real_stanford_cars.png,real,real,stanford_cars,1280,850,0.5231807827949524
+testset\ai\0277_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,3.3082942536566406e-05
+testset\real\0278_real_stanford_cars.png,real,real,stanford_cars,600,428,0.9926161766052246
+testset\ai\0279_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.04409349709749222
+testset\ai\0280_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.7803187966346741
+testset\ai\0281_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.8745030760765076
+testset\real\0282_real_furniture.png,real,real,furniture,1024,682,0.9990209341049194
+testset\real\0283_real_wikiart.png,real,real,wikiart,2082,1382,0.9759612083435059
+testset\real\0284_real_portraits.png,real,real,portraits,1024,1024,0.9995526671409607
+testset\ai\0285_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.125887930393219
+testset\ai\0286_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.2063739150762558
+testset\real\0287_real_portraits.png,real,real,portraits,1024,1024,0.9999998807907104
+testset\real\0288_real_imagenet.png,real,real,imagenet,815,1055,0.9975221753120422
+testset\ai\0289_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.6021219491958618
+testset\ai\0290_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.07909543812274933
+testset\real\0291_real_coco.png,real,real,coco,565,640,0.9999920129776001
+testset\ai\0292_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.0015996586298570037
+testset\real\0293_real_coco.png,real,real,coco,427,640,0.9994843006134033
+testset\real\0294_real_food101.png,real,real,food101,512,384,1.0
+testset\ai\0295_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9784483909606934
+testset\ai\0296_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9810730218887329
+testset\ai\0297_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.21066778898239136
+testset\real\0298_real_portraits.png,real,real,portraits,1024,1024,0.9999947547912598
+testset\real\0299_real_furniture.png,real,real,furniture,681,1024,0.9995540976524353
+testset\real\0300_real_abstract.png,real,real,abstract,1024,1024,0.004531962797045708
+testset\ai\0301_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.1995882687187986e-07
+testset\ai\0302_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.6992214918136597
+testset\real\0303_real_abstract.png,real,real,abstract,1024,1024,0.3861368000507355
+testset\real\0304_real_furniture.png,real,real,furniture,682,1024,0.999958872795105
+testset\ai\0305_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.2644967739561253e-08
+testset\ai\0306_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.0031577099580317736
+testset\real\0307_real_food101.png,real,real,food101,512,512,1.0
+testset\real\0308_real_wikiart.png,real,real,wikiart,1793,1382,0.9999881982803345
+testset\real\0309_real_furniture.png,real,real,furniture,601,1024,0.9999998807907104
+testset\real\0310_real_stanford_cars.png,real,real,stanford_cars,800,600,0.8288191556930542
+testset\real\0311_real_food101.png,real,real,food101,512,512,0.9986016154289246
+testset\ai\0312_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0003501632600091398
+testset\ai\0313_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9998753070831299
+testset\real\0314_real_portraits.png,real,real,portraits,1024,1024,0.9997089505195618
+testset\real\0315_real_wikiart.png,real,real,wikiart,1779,1382,0.9998385906219482
+testset\real\0316_real_pokemon.png,real,real,pokemon,300,300,0.00018342358816880733
+testset\real\0317_real_stanford_cars.png,real,real,stanford_cars,1200,800,0.001137816347181797
+testset\ai\0318_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.04134096950292587
+testset\real\0319_real_furniture.png,real,real,furniture,683,1024,0.9999966621398926
+testset\real\0320_real_wikiart.png,real,real,wikiart,1382,1582,0.9424085021018982
+testset\ai\0321_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.034064728766679764
+testset\real\0322_real_stanford_cars.png,real,real,stanford_cars,900,418,0.4723394215106964
+testset\real\0323_real_coco.png,real,real,coco,600,500,1.0
+testset\real\0324_real_pokemon.png,real,real,pokemon,300,300,0.000566433125641197
+testset\real\0325_real_pokemon.png,real,real,pokemon,275,300,0.0006940001039765775
+testset\real\0326_real_wikiart.png,real,real,wikiart,2881,1382,0.999996542930603
+testset\ai\0327_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,1.7377753465552814e-05
+testset\real\0328_real_pokemon.png,real,real,pokemon,300,300,0.004727927502244711
+testset\real\0329_real_furniture.png,real,real,furniture,682,1024,0.9999022483825684
+testset\real\0330_real_food101.png,real,real,food101,512,512,0.9999994039535522
+testset\ai\0331_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9983130693435669
+testset\real\0332_real_coco.png,real,real,coco,640,480,0.9999828338623047
+testset\real\0333_real_pokemon.png,real,real,pokemon,592,473,2.3387305191135965e-05
+testset\real\0334_real_abstract.png,real,real,abstract,1024,1024,0.02105073444545269
+testset\real\0335_real_furniture.png,real,real,furniture,446,1024,0.9989134073257446
+testset\real\0336_real_wikiart.png,real,real,wikiart,1688,1382,0.7473583817481995
+testset\ai\0337_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9081787467002869
+testset\real\0338_real_wikiart.png,real,real,wikiart,1382,1681,0.270128071308136
+testset\real\0339_real_imagenet.png,real,real,imagenet,332,500,0.9999895095825195
+testset\ai\0340_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9922788143157959
+testset\real\0341_real_stanford_cars.png,real,real,stanford_cars,550,413,0.9470417499542236
+testset\ai\0342_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.2562001645565033
+testset\real\0343_real_pokemon.png,real,real,pokemon,300,300,0.00014495453797280788
+testset\ai\0344_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.004557380918413401
+testset\ai\0345_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.83734530210495
+testset\real\0346_real_imagenet.png,real,real,imagenet,500,375,0.999991774559021
+testset\real\0347_real_food101.png,real,real,food101,512,512,0.9995259046554565
+testset\real\0348_real_coco.png,real,real,coco,640,480,0.9999964237213135
+testset\ai\0349_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.06208623945713043
+testset\real\0350_real_abstract.png,real,real,abstract,1024,1024,0.005180698353797197
+testset\real\0351_real_coco.png,real,real,coco,640,428,0.9998544454574585
+testset\real\0352_real_furniture.png,real,real,furniture,867,1024,0.9957197308540344
+testset\real\0353_real_food101.png,real,real,food101,384,512,0.9999970197677612
+testset\real\0354_real_portraits.png,real,real,portraits,1024,1024,0.9999994039535522
+testset\ai\0355_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0002640486927703023
+testset\ai\0356_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,2.9860866561648436e-05
+testset\ai\0357_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.0013520863140001893
+testset\ai\0358_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9994210004806519
+testset\ai\0359_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.6570765376091003
+testset\real\0360_real_abstract.png,real,real,abstract,1024,1024,0.0787321999669075
+testset\ai\0361_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,1.2546832294901833e-05
+testset\real\0362_real_food101.png,real,real,food101,512,340,0.9999995231628418
+testset\real\0363_real_food101.png,real,real,food101,512,384,0.9999994039535522
+testset\real\0364_real_furniture.png,real,real,furniture,1024,682,0.8201830983161926
+testset\ai\0365_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9982571005821228
+testset\real\0366_real_food101.png,real,real,food101,512,512,0.9999977350234985
+testset\real\0367_real_abstract.png,real,real,abstract,1024,1024,0.006823502480983734
+testset\ai\0368_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.4905942380428314
+testset\real\0369_real_abstract.png,real,real,abstract,1024,1024,0.00030783668626099825
+testset\real\0370_real_furniture.png,real,real,furniture,682,1024,0.9999183416366577
+testset\real\0371_real_stanford_cars.png,real,real,stanford_cars,1280,850,0.9979298114776611
+testset\real\0372_real_pokemon.png,real,real,pokemon,1057,1132,2.4511296103923996e-08
+testset\real\0373_real_stanford_cars.png,real,real,stanford_cars,600,323,6.428935250823997e-08
+testset\real\0374_real_coco.png,real,real,coco,480,640,1.0
+testset\real\0375_real_food101.png,real,real,food101,512,512,0.9999990463256836
+testset\real\0376_real_stanford_cars.png,real,real,stanford_cars,1600,900,0.9999967813491821
+testset\real\0377_real_abstract.png,real,real,abstract,1024,1024,0.004231812432408333
+testset\real\0378_real_imagenet.png,real,real,imagenet,500,333,0.9999908208847046
+testset\ai\0379_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.04129017889499664
+testset\ai\0380_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.35201093554496765
+testset\real\0381_real_wikiart.png,real,real,wikiart,2000,1382,0.9933888912200928
+testset\ai\0382_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9944182634353638
+testset\real\0383_real_pokemon.png,real,real,pokemon,1280,720,0.12383920699357986
+testset\real\0384_real_portraits.png,real,real,portraits,1024,1024,0.9999511241912842
+testset\real\0385_real_stanford_cars.png,real,real,stanford_cars,1024,598,1.0
+testset\ai\0386_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.026857363060116768
+testset\real\0387_real_furniture.png,real,real,furniture,682,1024,0.9999912977218628
+testset\ai\0388_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,7.0534399128519e-05
+testset\real\0389_real_wikiart.png,real,real,wikiart,2153,1382,0.9182659983634949
+testset\ai\0390_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.2191293090581894
+testset\ai\0391_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.03665084019303322
+testset\ai\0392_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.7171273827552795
+testset\real\0393_real_imagenet.png,real,real,imagenet,500,370,0.0393509566783905
+testset\ai\0394_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.05219181627035141
+testset\real\0395_real_imagenet.png,real,real,imagenet,500,445,0.9312259554862976
+testset\ai\0396_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9689919352531433
+testset\ai\0397_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0021051072981208563
+testset\real\0398_real_food101.png,real,real,food101,512,512,0.9999229907989502
+testset\real\0399_real_furniture.png,real,real,furniture,1024,683,0.985438346862793
+testset\ai\0400_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.00016016935114748776
+testset\real\0401_real_portraits.png,real,real,portraits,1024,1024,0.9984266757965088
+testset\real\0402_real_imagenet.png,real,real,imagenet,375,500,0.9205337762832642
+testset\real\0403_real_wikiart.png,real,real,wikiart,1932,1382,0.9999998807907104
+testset\real\0404_real_portraits.png,real,real,portraits,1024,1024,0.9999980926513672
+testset\real\0405_real_imagenet.png,real,real,imagenet,500,333,0.9999980926513672
+testset\real\0406_real_pokemon.png,real,real,pokemon,900,900,0.018686022609472275
+testset\real\0407_real_coco.png,real,real,coco,612,612,0.44387322664260864
+testset\ai\0408_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,3.976786653073997e-15
+testset\ai\0409_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.3715682923793793
+testset\real\0410_real_furniture.png,real,real,furniture,1024,618,0.9999948740005493
+testset\real\0411_real_furniture.png,real,real,furniture,519,1024,0.9977770447731018
+testset\real\0412_real_food101.png,real,real,food101,512,512,0.9968019723892212
+testset\ai\0413_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.36622321605682373
+testset\real\0414_real_coco.png,real,real,coco,427,640,0.9999986886978149
+testset\real\0415_real_portraits.png,real,real,portraits,1024,1024,0.9996416568756104
+testset\real\0416_real_wikiart.png,real,real,wikiart,1382,1488,0.9496751427650452
+testset\real\0417_real_wikiart.png,real,real,wikiart,1382,1642,0.8917815089225769
+testset\ai\0418_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.00025694005307741463
+testset\real\0419_real_wikiart.png,real,real,wikiart,1548,1382,0.870970606803894
+testset\real\0420_real_wikiart.png,real,real,wikiart,2043,1382,0.9969432950019836
+testset\real\0421_real_furniture.png,real,real,furniture,682,1024,0.9793939590454102
+testset\real\0422_real_pokemon.png,real,real,pokemon,900,1290,0.00038199187838472426
+testset\ai\0423_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9733386039733887
+testset\real\0424_real_wikiart.png,real,real,wikiart,1584,1382,0.00027126347413286567
+testset\real\0425_real_pokemon.png,real,real,pokemon,300,300,0.01760823279619217
+testset\real\0426_real_furniture.png,real,real,furniture,1024,683,0.9999997615814209
+testset\ai\0427_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.24994681775569916
+testset\real\0428_real_coco.png,real,real,coco,640,427,0.9999959468841553
+testset\real\0429_real_portraits.png,real,real,portraits,1024,1024,0.9999986886978149
+testset\real\0430_real_wikiart.png,real,real,wikiart,1382,1733,0.9837358593940735
+testset\real\0431_real_food101.png,real,real,food101,382,512,1.0
+testset\real\0432_real_furniture.png,real,real,furniture,682,1024,0.9999996423721313
+testset\ai\0433_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.007699726615101099
+testset\real\0434_real_food101.png,real,real,food101,512,384,1.0
+testset\real\0435_real_imagenet.png,real,real,imagenet,472,400,0.9999769926071167
+testset\real\0436_real_stanford_cars.png,real,real,stanford_cars,900,540,0.9459264278411865
+testset\ai\0437_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9984490871429443
+testset\ai\0438_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9423947334289551
+testset\real\0439_real_wikiart.png,real,real,wikiart,1548,1382,0.9114701747894287
+testset\real\0440_real_abstract.png,real,real,abstract,1024,1024,0.98988276720047
+testset\real\0441_real_imagenet.png,real,real,imagenet,500,375,1.0
+testset\real\0442_real_wikiart.png,real,real,wikiart,2099,1382,0.9999978542327881
+testset\ai\0443_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9432694911956787
+testset\real\0444_real_stanford_cars.png,real,real,stanford_cars,660,396,0.9982567429542542
+testset\real\0445_real_food101.png,real,real,food101,512,512,0.9996019005775452
+testset\ai\0446_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.7341893315315247
+testset\real\0447_real_portraits.png,real,real,portraits,1024,1024,0.9999997615814209
+testset\real\0448_real_coco.png,real,real,coco,640,480,0.9999998807907104
+testset\ai\0449_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.1344024386517049e-08
+testset\real\0450_real_food101.png,real,real,food101,512,512,0.9999823570251465
+testset\ai\0451_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.5234310626983643
+testset\real\0452_real_pokemon.png,real,real,pokemon,1500,1500,0.0033956922125071287
+testset\real\0453_real_imagenet.png,real,real,imagenet,500,333,0.9999889135360718
+testset\ai\0454_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.998323380947113
+testset\ai\0455_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9887136816978455
+testset\real\0456_real_furniture.png,real,real,furniture,682,1024,0.9994581341743469
+testset\ai\0457_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,2.171413715501558e-09
+testset\real\0458_real_coco.png,real,real,coco,640,480,0.9999794960021973
+testset\real\0459_real_abstract.png,real,real,abstract,1024,1024,0.16888141632080078
+testset\real\0460_real_pokemon.png,real,real,pokemon,300,300,0.0031579697970300913
+testset\real\0461_real_portraits.png,real,real,portraits,1024,1024,0.9999992847442627
+testset\real\0462_real_wikiart.png,real,real,wikiart,1885,1382,0.999460756778717
+testset\real\0463_real_food101.png,real,real,food101,512,512,1.0
+testset\real\0464_real_wikiart.png,real,real,wikiart,2159,1382,0.9828220009803772
+testset\real\0465_real_coco.png,real,real,coco,480,640,0.9999774694442749
+testset\real\0466_real_imagenet.png,real,real,imagenet,500,375,0.9999938011169434
+testset\real\0467_real_abstract.png,real,real,abstract,1024,1024,0.03630135580897331
+testset\real\0468_real_wikiart.png,real,real,wikiart,1382,1770,0.9999903440475464
+testset\ai\0469_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.10276645421981812
+testset\ai\0470_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.6136432886123657
+testset\ai\0471_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.8215402960777283
+testset\real\0472_real_food101.png,real,real,food101,512,512,1.0
+testset\real\0473_real_portraits.png,real,real,portraits,1024,1024,0.9999836683273315
+testset\real\0474_real_portraits.png,real,real,portraits,1024,1024,0.9995941519737244
+testset\real\0475_real_imagenet.png,real,real,imagenet,640,460,0.9973496198654175
+testset\real\0476_real_coco.png,real,real,coco,600,600,0.9999916553497314
+testset\ai\0477_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0006750079919584095
+testset\ai\0478_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.6184502243995667
+testset\real\0479_real_furniture.png,real,real,furniture,1024,680,0.9949131011962891
+testset\real\0480_real_furniture.png,real,real,furniture,682,1024,1.0
+testset\real\0481_real_food101.png,real,real,food101,512,512,0.9973511695861816
+testset\real\0482_real_stanford_cars.png,real,real,stanford_cars,640,533,0.006699504796415567
+testset\real\0483_real_stanford_cars.png,real,real,stanford_cars,1120,725,0.9887613654136658
+testset\real\0484_real_food101.png,real,real,food101,512,384,1.0
+testset\real\0485_real_abstract.png,real,real,abstract,1024,1024,0.0008860825328156352
+testset\ai\0486_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.8614266514778137
+testset\ai\0487_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,4.178237134055962e-08
+testset\real\0488_real_abstract.png,real,real,abstract,1024,1024,0.017082875594496727
+testset\real\0489_real_portraits.png,real,real,portraits,1024,1024,0.9999997615814209
+testset\real\0490_real_coco.png,real,real,coco,640,480,0.9999915361404419
+testset\ai\0491_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.006216282490640879
+testset\real\0492_real_pokemon.png,real,real,pokemon,944,1254,0.0003284815466031432
+testset\ai\0493_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.005176689010113478
+testset\real\0494_real_abstract.png,real,real,abstract,1024,1024,0.016170380637049675
+testset\ai\0495_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.8213228583335876
+testset\real\0496_real_coco.png,real,real,coco,640,480,0.9999817609786987
+testset\real\0497_real_wikiart.png,real,real,wikiart,2101,1382,0.2430529147386551
+testset\ai\0498_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,2.3878126143017653e-09
+testset\real\0499_real_portraits.png,real,real,portraits,1024,1024,0.8267475962638855
+testset\ai\0500_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9719162583351135
+testset\real\0501_real_imagenet.png,real,real,imagenet,817,363,0.9998486042022705
+testset\ai\0502_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,8.844973109489729e-08
+testset\ai\0503_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,2.894773587502897e-10
+testset\real\0504_real_portraits.png,real,real,portraits,1024,1024,0.9999985694885254
+testset\real\0505_real_imagenet.png,real,real,imagenet,500,375,0.9999994039535522
+testset\ai\0506_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9865295886993408
+testset\ai\0507_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.011348326690495014
+testset\real\0508_real_food101.png,real,real,food101,512,384,0.9998849630355835
+testset\real\0509_real_stanford_cars.png,real,real,stanford_cars,576,352,0.6938450932502747
+testset\real\0510_real_imagenet.png,real,real,imagenet,500,375,0.999247670173645
+testset\real\0511_real_furniture.png,real,real,furniture,818,1024,0.9745295643806458
+testset\real\0512_real_imagenet.png,real,real,imagenet,500,333,0.9987847208976746
+testset\real\0513_real_portraits.png,real,real,portraits,1024,1024,0.9986693859100342
+testset\real\0514_real_abstract.png,real,real,abstract,1024,1024,0.004236643668264151
+testset\real\0515_real_portraits.png,real,real,portraits,1024,1024,0.9999572038650513
+testset\real\0516_real_stanford_cars.png,real,real,stanford_cars,750,469,0.9983004927635193
+testset\ai\0517_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.44722795486450195
+testset\real\0518_real_coco.png,real,real,coco,640,478,0.9999995231628418
+testset\real\0519_real_abstract.png,real,real,abstract,1024,1024,0.012826621532440186
+testset\real\0520_real_food101.png,real,real,food101,512,384,0.9999998807907104
+testset\ai\0521_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,2.475016742664593e-07
+testset\real\0522_real_imagenet.png,real,real,imagenet,500,358,0.010145355947315693
+testset\real\0523_real_stanford_cars.png,real,real,stanford_cars,550,365,0.9999994039535522
+testset\ai\0524_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.0012195982271805406
+testset\real\0525_real_pokemon.png,real,real,pokemon,300,300,0.0041615623049438
+testset\real\0526_real_imagenet.png,real,real,imagenet,500,375,0.8735986351966858
+testset\real\0527_real_portraits.png,real,real,portraits,1024,1024,0.9995829463005066
+testset\ai\0528_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.5841567516326904
+testset\real\0529_real_stanford_cars.png,real,real,stanford_cars,540,300,0.31638404726982117
+testset\real\0530_real_furniture.png,real,real,furniture,683,1024,0.9999969005584717
+testset\real\0531_real_imagenet.png,real,real,imagenet,500,389,0.9883963465690613
+testset\real\0532_real_food101.png,real,real,food101,384,512,0.9999666213989258
+testset\real\0533_real_portraits.png,real,real,portraits,1024,1024,0.999906063079834
+testset\ai\0534_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.23004001379013062
+testset\ai\0535_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,3.0516370316036046e-05
+testset\real\0536_real_stanford_cars.png,real,real,stanford_cars,627,304,0.9856764078140259
+testset\real\0537_real_food101.png,real,real,food101,512,471,0.9970664381980896
+testset\real\0538_real_imagenet.png,real,real,imagenet,500,375,1.0
+testset\real\0539_real_food101.png,real,real,food101,512,512,0.9997742772102356
+testset\ai\0540_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.08874640613794327
+testset\ai\0541_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,3.1199411751003936e-05
+testset\real\0542_real_imagenet.png,real,real,imagenet,468,351,0.9994742274284363
+testset\ai\0543_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9881360530853271
+testset\real\0544_real_abstract.png,real,real,abstract,1024,1024,0.35439473390579224
+testset\ai\0545_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.09082130342721939
+testset\real\0546_real_coco.png,real,real,coco,640,425,0.9999895095825195
+testset\real\0547_real_wikiart.png,real,real,wikiart,1382,1574,0.9992390871047974
+testset\real\0548_real_imagenet.png,real,real,imagenet,370,550,0.9580084085464478
+testset\real\0549_real_stanford_cars.png,real,real,stanford_cars,1600,1150,0.9844500422477722
+testset\real\0550_real_abstract.png,real,real,abstract,1024,1024,0.47880056500434875
+testset\real\0551_real_food101.png,real,real,food101,512,348,1.0
+testset\ai\0552_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9930576086044312
+testset\real\0553_real_pokemon.png,real,real,pokemon,300,300,0.0023274878039956093
+testset\real\0554_real_furniture.png,real,real,furniture,547,1024,0.9996148347854614
+testset\real\0555_real_imagenet.png,real,real,imagenet,500,428,0.9999997615814209
+testset\ai\0556_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.015548084862530231
+testset\real\0557_real_imagenet.png,real,real,imagenet,500,375,1.0
+testset\real\0558_real_portraits.png,real,real,portraits,1024,1024,0.9992936849594116
+testset\real\0559_real_portraits.png,real,real,portraits,1024,1024,0.9880635142326355
+testset\real\0560_real_abstract.png,real,real,abstract,1024,1024,0.9976422190666199
+testset\real\0561_real_pokemon.png,real,real,pokemon,355,355,0.023634498938918114
+testset\real\0562_real_abstract.png,real,real,abstract,1024,1024,0.36573708057403564
+testset\real\0563_real_furniture.png,real,real,furniture,1024,768,0.9976047277450562
+testset\real\0564_real_wikiart.png,real,real,wikiart,1382,1718,0.9565920233726501
+testset\real\0565_real_portraits.png,real,real,portraits,1024,1024,0.9988507032394409
+testset\real\0566_real_pokemon.png,real,real,pokemon,300,300,0.03587724640965462
+testset\ai\0567_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9916247725486755
+testset\real\0568_real_portraits.png,real,real,portraits,1024,1024,0.9999998807907104
+testset\ai\0569_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9290839433670044
+testset\real\0570_real_pokemon.png,real,real,pokemon,938,851,0.31699156761169434
+testset\ai\0571_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.01313198171555996
+testset\real\0572_real_wikiart.png,real,real,wikiart,1997,1382,0.9852110147476196
+testset\real\0573_real_pokemon.png,real,real,pokemon,300,300,0.005771446041762829
+testset\ai\0574_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.6947585344314575
+testset\real\0575_real_stanford_cars.png,real,real,stanford_cars,900,586,0.00014426701818592846
+testset\real\0576_real_coco.png,real,real,coco,416,640,0.9999985694885254
+testset\real\0577_real_portraits.png,real,real,portraits,1024,1024,0.9999865293502808
+testset\ai\0578_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,1.705223695580571e-07
+testset\real\0579_real_furniture.png,real,real,furniture,682,1024,0.989439070224762
+testset\ai\0580_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,7.158553785302502e-07
+testset\ai\0581_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.01590566150844097
+testset\ai\0582_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.973450779914856
+testset\ai\0583_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.00799742341041565
+testset\ai\0584_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.3066861927509308
+testset\ai\0585_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.20105183124542236
+testset\ai\0586_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9186086058616638
+testset\real\0587_real_pokemon.png,real,real,pokemon,800,600,0.0001726821792544797
+testset\ai\0588_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.11678323149681091
+testset\ai\0589_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.0078007979318499565
+testset\ai\0590_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9989351630210876
+testset\real\0591_real_stanford_cars.png,real,real,stanford_cars,786,492,0.9932570457458496
+testset\real\0592_real_abstract.png,real,real,abstract,1024,1024,0.046179741621017456
+testset\real\0593_real_wikiart.png,real,real,wikiart,1382,2000,0.8747730255126953
+testset\real\0594_real_portraits.png,real,real,portraits,1024,1024,0.9999845027923584
+testset\real\0595_real_abstract.png,real,real,abstract,1024,1024,0.05922805145382881
+testset\real\0596_real_food101.png,real,real,food101,512,512,0.9999710321426392
+testset\real\0597_real_pokemon.png,real,real,pokemon,1280,720,0.02410765551030636
+testset\ai\0598_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9814122915267944
+testset\ai\0599_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.0008411903399974108
+testset\real\0600_real_pokemon.png,real,real,pokemon,1500,1500,0.8996139764785767
+testset\ai\0601_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.0002594274701550603
+testset\ai\0602_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,6.881852954165879e-08
+testset\ai\0603_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.011036640033125877
+testset\ai\0604_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9969159364700317
+testset\ai\0605_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.7350346446037292
+testset\ai\0606_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9959142804145813
+testset\real\0607_real_coco.png,real,real,coco,428,640,0.9999974966049194
+testset\real\0608_real_pokemon.png,real,real,pokemon,300,300,0.0010950978612527251
+testset\ai\0609_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.0023027535062283278
+testset\ai\0610_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.942153811454773
+testset\real\0611_real_coco.png,real,real,coco,480,640,1.0
+testset\real\0612_real_furniture.png,real,real,furniture,682,1024,0.9999991655349731
+testset\real\0613_real_stanford_cars.png,real,real,stanford_cars,616,316,0.9726110696792603
+testset\ai\0614_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.0003862534067593515
+testset\real\0615_real_pokemon.png,real,real,pokemon,300,300,0.005732151214033365
+testset\real\0616_real_pokemon.png,real,real,pokemon,300,300,0.003487437264993787
+testset\real\0617_real_abstract.png,real,real,abstract,1024,1024,0.005574884358793497
+testset\real\0618_real_food101.png,real,real,food101,512,512,0.9987099170684814
+testset\real\0619_real_furniture.png,real,real,furniture,682,1024,1.0
+testset\real\0620_real_pokemon.png,real,real,pokemon,300,300,0.0044969217851758
+testset\ai\0621_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9980260133743286
+testset\ai\0622_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.1434469372034073
+testset\real\0623_real_imagenet.png,real,real,imagenet,300,300,0.9494104385375977
+testset\ai\0624_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,2.3316772512771422e-08
+testset\ai\0625_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.00906179565936327
+testset\real\0626_real_abstract.png,real,real,abstract,1024,1024,0.9480833411216736
+testset\ai\0627_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.3630315661430359
+testset\real\0628_real_abstract.png,real,real,abstract,1024,1024,0.35835009813308716
+testset\real\0629_real_stanford_cars.png,real,real,stanford_cars,1333,885,0.9872718453407288
+testset\real\0630_real_imagenet.png,real,real,imagenet,500,334,0.12747722864151
+testset\real\0631_real_coco.png,real,real,coco,512,640,0.9999991655349731
+testset\real\0632_real_wikiart.png,real,real,wikiart,1382,1968,0.998992383480072
+testset\real\0633_real_pokemon.png,real,real,pokemon,300,300,0.007011642679572105
+testset\real\0634_real_pokemon.png,real,real,pokemon,300,300,0.03422149643301964
+testset\real\0635_real_pokemon.png,real,real,pokemon,300,300,0.0005516222445294261
+testset\real\0636_real_abstract.png,real,real,abstract,1024,1024,0.14993949234485626
+testset\real\0637_real_imagenet.png,real,real,imagenet,500,375,0.9999995231628418
+testset\ai\0638_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.028144586831331253
+testset\real\0639_real_coco.png,real,real,coco,640,427,1.0
+testset\real\0640_real_coco.png,real,real,coco,381,500,0.9999536275863647
+testset\ai\0641_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,8.795391970295441e-09
+testset\ai\0642_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.000266405229922384
+testset\real\0643_real_portraits.png,real,real,portraits,1024,1024,0.9994052648544312
+testset\ai\0644_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,1.4084891475363293e-08
+testset\real\0645_real_food101.png,real,real,food101,384,512,1.0
+testset\real\0646_real_food101.png,real,real,food101,512,382,1.0
+testset\real\0647_real_food101.png,real,real,food101,512,512,1.0
+testset\real\0648_real_imagenet.png,real,real,imagenet,500,385,0.999923586845398
+testset\ai\0649_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9307047128677368
+testset\real\0650_real_pokemon.png,real,real,pokemon,300,300,0.0013777510030195117
+testset\real\0651_real_abstract.png,real,real,abstract,1024,1024,0.00721666868776083
+testset\ai\0652_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,2.885618073378282e-07
+testset\ai\0653_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.009856476448476315
+testset\ai\0654_imagegbt_ImageGBT 1.5.png,ai,imagegbt,ImageGBT 1.5,1024,1024,0.9917045831680298
+testset\ai\0655_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.0002957528631668538
+testset\real\0656_real_wikiart.png,real,real,wikiart,1382,1629,0.9999880790710449
+testset\ai\0657_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.999549925327301
+testset\real\0658_real_portraits.png,real,real,portraits,1024,1024,0.9716017246246338
+testset\real\0659_real_imagenet.png,real,real,imagenet,500,367,0.9998990297317505
+testset\real\0660_real_imagenet.png,real,real,imagenet,500,375,0.9171091914176941
+testset\real\0661_real_portraits.png,real,real,portraits,1024,1024,1.0
+testset\ai\0662_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.12511374056339264
+testset\real\0663_real_imagenet.png,real,real,imagenet,500,333,0.9998953342437744
+testset\ai\0664_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,0.9920784831047058
+testset\real\0665_real_coco.png,real,real,coco,640,573,0.9996514320373535
+testset\real\0666_real_food101.png,real,real,food101,512,512,0.9999997615814209
+testset\real\0667_real_coco.png,real,real,coco,640,426,1.0
+testset\ai\0668_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.003775416873395443
+testset\ai\0669_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.006220254581421614
+testset\real\0670_real_furniture.png,real,real,furniture,1024,682,0.9999986886978149
+testset\ai\0671_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.004556918516755104
+testset\real\0672_real_pokemon.png,real,real,pokemon,300,300,0.040070950984954834
+testset\real\0673_real_coco.png,real,real,coco,481,640,0.9999631643295288
+testset\real\0674_real_food101.png,real,real,food101,512,382,0.999913215637207
+testset\real\0675_real_coco.png,real,real,coco,480,640,0.999933123588562
+testset\ai\0676_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,2.4134305931511335e-05
+testset\ai\0677_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.9955816864967346
+testset\real\0678_real_furniture.png,real,real,furniture,733,1024,0.9999963045120239
+testset\ai\0679_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,4.069648866789066e-07
+testset\real\0680_real_wikiart.png,real,real,wikiart,1382,2113,0.9976649284362793
+testset\real\0681_real_furniture.png,real,real,furniture,853,1024,0.5377930402755737
+testset\real\0682_real_imagenet.png,real,real,imagenet,500,375,0.9665221571922302
+testset\ai\0683_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.00027370889438316226
+testset\real\0684_real_stanford_cars.png,real,real,stanford_cars,1304,733,0.9992318153381348
+testset\real\0685_real_stanford_cars.png,real,real,stanford_cars,600,426,0.3988731801509857
+testset\ai\0686_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.015700362622737885
+testset\real\0687_real_portraits.png,real,real,portraits,1024,1024,0.999998927116394
+testset\ai\0688_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.0008031769539229572
+testset\real\0689_real_wikiart.png,real,real,wikiart,1382,1828,0.9996911287307739
+testset\real\0690_real_coco.png,real,real,coco,640,480,0.9999994039535522
+testset\ai\0691_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9997937083244324
+testset\real\0692_real_stanford_cars.png,real,real,stanford_cars,800,568,1.0
+testset\ai\0693_sdxl_Stable Diffusion XL.png,ai,sdxl,Stable Diffusion XL,1024,1024,7.11963718232414e-14
+testset\ai\0694_seedream_SeeDream 4.5.png,ai,seedream,SeeDream 4.5,2048,2048,0.00011810915020760149
+testset\real\0695_real_wikiart.png,real,real,wikiart,1878,1381,0.9999969005584717
+testset\real\0696_real_food101.png,real,real,food101,511,512,0.9999971389770508
+testset\ai\0697_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.9994794726371765
+testset\ai\0698_flux_FLUX 1.0 Dev.png,ai,flux,FLUX 1.0 Dev,1024,1024,0.5011182427406311
+testset\ai\0699_nano_Nano Banana Pro.png,ai,nano,Nano Banana Pro,1024,1024,0.034573785960674286

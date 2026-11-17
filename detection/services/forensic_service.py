@@ -270,7 +270,7 @@ def analyze(image_path: str) -> dict:
         real_threshold = _cnn_metadata["threshold"]
 
         manipulation_score = ai_probability
-        verdict = "likely real" if real_probability >= real_threshold else "likely AI-generated"
+        verdict = "authentic" if real_probability >= real_threshold else "manipulated"
         model_name = "EfficientNet-B0 AI-vs-Real"
         model_version = "candidate-1"
         

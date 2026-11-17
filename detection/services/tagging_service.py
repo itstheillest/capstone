@@ -35,7 +35,7 @@ def _rule_identity_fraud(face_count: int, verdict: str, manipulation_score: floa
     if face_count > 0 and verdict == "manipulated":
         return {
             "tag_code": "identity_fraud",
-            "tag_label": "Identity Fraud / Profile Misrepresentation",
+            "tag_label": "Possible Identity Fraud (Face + Manipulation Detected)",
             "rule_description": (
                 f"{face_count} face(s) detected and forensic verdict was 'manipulated' "
                 f"(score {manipulation_score:.3f}). Combination suggests a possible face "
@@ -98,12 +98,7 @@ RULES = [
 ]
 
 
-def generate_tags(
-    image_path: str,
-    face_count: int = 0,
-    verdict: str = "",
-    manipulation_score: float = 0.0,
-) -> list[dict]:
+def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manipulation_score: float = 0.0,) -> list[dict]:
     tags = []
     seen = set()
 
@@ -128,6 +123,7 @@ def generate_tags(
                         })
         except Exception as exc:
             logger.warning("YOLO object tagging failed (%s).", exc)
+            
     elif face_count > 0:
         seen.add("person")
         tags.append({
@@ -146,50 +142,3 @@ def generate_tags(
 
     return tags
 
-def generate_tags(
-    image_path: str,
-    face_count: int = 0,
-    verdict: str = "",
-    manipulation_score: float = 0.0,
-) -> list[dict]:
-    tags = []
-    seen = set()
-
-    yolo = get_yolo_model()
-    if yolo is not None:
-        try:
-            results = yolo(image_path, conf=0.4, verbose=False)
-            for result in results:
-                for box in result.boxes:
-                    class_id = int(box.cls[0])
-                    label = result.names[class_id]
-                    confidence = float(box.conf[0])
-                    code = label.lower().replace(" ", "_")
-
-                    if code not in seen:
-                        seen.add(code)
-                        tags.append({
-                            "tag_code": code,
-                            "tag_label": label.capitalize(),
-                            "confidence": round(confidence, 4),
-                            "rule_description": f"YOLO object detection: '{label}' detected with confidence {confidence:.4f}.",
-                        })
-        except Exception as exc:
-            logger.warning("YOLO object tagging failed (%s).", exc)
-    elif face_count > 0:
-        seen.add("person")
-        tags.append({
-            "tag_code": "person",
-            "tag_label": "Person",
-            "confidence": 0.95,
-            "rule_description": f"Biometric detector identified {face_count} human face(s).",
-        })
-
-    # Always evaluate legal mapping rules regardless of whether YOLO is installed
-    for rule_fn in RULES:
-        result = rule_fn(face_count, verdict, manipulation_score)
-        if result and result["tag_code"] not in seen:
-            seen.add(result["tag_code"])
-            tags.append(result)
-
-    return tags

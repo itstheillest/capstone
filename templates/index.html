@@ -605,7 +605,7 @@
       scoreEl.innerText = `Manipulation Score: ${score.toFixed(1)}%`;
       modelInfoEl.innerText = `Engine: ${forensic.model_name || 'ELA-heuristic-baseline'} (${forensic.model_version || 'v0.1'})`;
 
-      if (verdict === 'likely AI-generated') {
+      if (verdict === 'manipulated') {
         verdictCard.className = 'border border-red-200 bg-red-50/50 rounded-2xl p-6 space-y-2';
         verdictBadge.className = 'text-xs font-bold tracking-wider text-red-700 uppercase';
         verdictBadge.innerText = 'LIKELY AI-GENERATED / MANIPULATED MEDIA';

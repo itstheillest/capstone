@@ -45,3 +45,6 @@ repomix-output.xml
 *.before-supabase
 pixifai-data.json
 AGENTS.md
+
+testset/
+predictions.csv

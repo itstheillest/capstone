@@ -28,6 +28,18 @@ from legalmap.services import mapping_service
 
 logger = logging.getLogger(__name__)
 
+def resolve_final_verdict(
+    visual_verdict: str,
+    provenance_status: str,
+) -> tuple[str, str]:
+    """Return (final verdict, reason) using the visual result and provenance."""
+    if provenance_status == "verified_ai":
+        return "manipulated", "verified_ai_provenance"
+
+    if provenance_status == "unverified_ai_marker":
+        return "inconclusive", "unverified_ai_marker"
+
+    return visual_verdict, "visual_classifier"
 
 def _log(submission, action_type, details=None, actor=None):
     AuditLog.objects.create(
@@ -36,6 +48,7 @@ def _log(submission, action_type, details=None, actor=None):
         action_type=action_type,
         details=details or {},
     )
+
 
 
 def process_submission(submission_id: str, actor=None) -> ImageSubmission:
@@ -48,6 +61,12 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
     try:
         # --- 1. EXIF Analysis ---
         exif_data = exif_service.extract_exif(image_path)
+        
+        provenance_status = exif_data.get("c2pa_status", "none")
+
+        if (provenance_status in {"none", "validation_error"} and exif_data.get("ai_metadata_detected")):
+            provenance_status = "unverified_ai_marker"
+        
         ExifMetadata.objects.update_or_create(
             submission=submission,
             defaults={
@@ -83,31 +102,47 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
 
         # --- 3. Forensic Analysis ---
         forensic_result = forensic_service.analyze(image_path)
+        
+        visual_verdict = forensic_result["verdict"]
+        final_verdict, decision_basis = resolve_final_verdict(visual_verdict, provenance_status,)
+        
         ForensicAnalysis.objects.update_or_create(
             submission=submission,
             defaults={
                 "model_name": forensic_result["model_name"],
                 "model_version": forensic_result["model_version"],
                 "manipulation_score": forensic_result["manipulation_score"],
-                "verdict": forensic_result["verdict"],
+                "verdict": visual_verdict,
                 "anomaly_regions": forensic_result["anomaly_regions"],
             },
         )
+        
         _log(
             submission,
             AuditLog.ActionType.FORENSIC_ANALYSIS,
-            {"verdict": forensic_result["verdict"], "score": forensic_result["manipulation_score"]},
+            {
+                "verdict": visual_verdict,
+                "score": forensic_result["manipulation_score"],
+                "model": forensic_result["model_name"],
+            },
             actor,
         )
 
+
         # --- 4. Tagging Layer ---
         TaggingResult.objects.filter(submission=submission).delete()
+        
         tags = tagging_service.generate_tags(
-            image_path=image_path,  # <--- Pass image_path here
+            image_path=image_path,
             face_count=len(faces),
-            verdict=forensic_result["verdict"],
+            verdict=final_verdict,
             manipulation_score=forensic_result["manipulation_score"],
+            has_exif_discrepancy=exif_data["has_discrepancy"],
+            ai_metadata_detected=exif_data["ai_metadata_detected"],
+            ai_metadata_markers=exif_data["ai_metadata_markers"],
+            provenance_status=provenance_status,
         )
+        
         for tag in tags:
             TaggingResult.objects.create(submission=submission, **tag)
 
@@ -115,17 +150,20 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         tag_summary = ", ".join(t["tag_label"] for t in tags) if tags else "No tags generated."
         report, _ = DetectionReport.objects.update_or_create(
             submission=submission,
-            defaults={
-                "overall_verdict": forensic_result["verdict"],
+           defaults={
+                "overall_verdict": final_verdict,
                 "confidence_score": forensic_result["manipulation_score"],
                 "summary_text": (
-                    f"Automated analysis: forensic verdict '{forensic_result['verdict']}' "
-                    f"(score {forensic_result['manipulation_score']:.3f}), "
+                    f"Final verdict: '{final_verdict}' "
+                    f"(decision basis: {decision_basis}). "
+                    f"Visual classifier verdict: '{visual_verdict}' "
+                    f"(score {forensic_result['manipulation_score']:.3f}). "
                     f"{len(faces)} face(s) detected. Tags: {tag_summary}"
                 ),
                 "review_status": DetectionReport.ReviewStatus.AUTO_GENERATED,
             },
         )
+        
         # Initial legal mapping — runs immediately after tagging, before fact-check.
         # A second enriched pass runs after the fact-check layer below.
         face_count = len(faces)
@@ -241,3 +279,4 @@ def trigger_image_pipeline(submission_id: str, async_execution: bool = True):
         process_submission(str(submission_id))
 
     return True
+

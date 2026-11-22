@@ -59,3 +59,8 @@ google-cloud-vision
 # On Windows, use a prebuilt dlib wheel instead of building from source.
 
 serpapi==1.1.2
+
+huggingface_hub
+
+#image metadata inspector
+c2pa-python

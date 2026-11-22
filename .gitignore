@@ -46,5 +46,18 @@ repomix-output.xml
 pixifai-data.json
 AGENTS.md
 
+tools/
 testset/
 predictions.csv
+ph_testset*/
+ph_archive*/
+ph_detector_norm.csv
+ph_detector.csv
+ph2_as_is_v2.csv
+ph2_as_is.csv
+ph2_norm_v2.csv
+ph2_norm.csv
+pixifai_jpeg70.csv
+pixifai_predictions.csv
+run1.csv
+run2.csv

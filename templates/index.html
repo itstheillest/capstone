@@ -278,7 +278,7 @@
             <!-- Biometric & Forensic Telemetry (from face_service.py & forensic_service.py) -->
             <div class="border border-zinc-200 rounded-2xl p-6 space-y-4">
               <div class="flex items-center justify-between">
-                <h3 class="text-sm font-bold text-zinc-900">Biometric & Forensic Telemetry <span class="text-xs font-normal text-zinc-500">(YOLOv8 / DeepFace / ELA)</span></h3>
+                <h3 class="text-sm font-bold text-zinc-900">Biometric & Forensic Telemetry <span class="text-xs font-normal text-zinc-500">(YOLOv8 / ELA)</span></h3>
               </div>
               <div class="grid grid-cols-3 gap-4 pt-1">
                 <div class="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50">
@@ -286,7 +286,7 @@
                   <span id="res-telemetry-faces" class="text-xs font-bold text-zinc-900 mt-1 block">0 Faces</span>
                 </div>
                 <div class="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50">
-                  <span class="text-[11px] text-zinc-500 block">Facial Attributes</span>
+                  <span class="text-[11px] text-zinc-500 block">Face detection confidence</span>
                   <span id="res-telemetry-attributes" class="text-xs font-bold text-zinc-900 mt-1 block">N/A</span>
                 </div>
                 <div class="border border-zinc-200 rounded-xl p-3 bg-zinc-50/50">
@@ -571,7 +571,7 @@
         sourceStatusEl.innerText = `Source Status: ${exif.discrepancy_notes || 'Modified / No Original Camera EXIF'}`;
       } else {
         sourceStatusEl.className = 'text-emerald-700 font-medium';
-        sourceStatusEl.innerText = 'Source Status: Verified Camera Metadata Present';
+        sourceStatusEl.innerText = 'Camera Metadata Present';
       }
 
       if (exif.software_tag) {
@@ -674,7 +674,7 @@
       } else {
         legalListEl.innerHTML = `
           <p class="text-zinc-500 italic">
-            No statutory violations triggered for this submission verdict. (Ensure <code class="font-mono text-zinc-700">python manage.py seed_legal_provisions</code> has been run).
+            No legal provisions matched for this result (Ensure <code class="font-mono text-zinc-700">python manage.py seed_legal_provisions</code> has been run).
           </p>
         `;
       }

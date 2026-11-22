@@ -1,8 +1,9 @@
 """
 Tagging Layer.
 
-Combines YOLOv8 detections with the Forensic Service verdict into semantic
-and legal tags that drive the Philippine Law Mapping Layer (legalmap app).
+Combines YOLOv8 object detections, EXIF/provenance metadata checks, and the
+Forensic Service verdict into semantic and legal tags that drive the
+Philippine Law Mapping Layer (legalmap app).
 """
 
 import logging
@@ -31,7 +32,35 @@ def get_yolo_model():
     return _yolo_model
 
 
-def _rule_identity_fraud(face_count: int, verdict: str, manipulation_score: float):
+def _rule_ai_metadata( provenance_status: str = "none", ai_metadata_markers: list[str] | None = None, **kwargs,):
+    markers = ", ".join(ai_metadata_markers or [])
+
+    if provenance_status == "verified_ai":
+        return {
+            "tag_code": "synthetic_media",
+            "tag_label": "AI-Generated Media — Verified Provenance",
+            "rule_description": (
+                "A trusted C2PA manifest declares an AI-generation source type."
+            ),
+            # This describes verified provenance, not the visual classifier's score.
+            "confidence": 1.0,
+        }
+
+    if provenance_status == "unverified_ai_marker":
+        marker_text = f" Marker clues: {markers}." if markers else ""
+        return {
+            "tag_code": "requires_human_review",
+            "tag_label": "Unverified AI Provenance — Requires Human Review",
+            "rule_description": (
+                "AI-related metadata was found, but its provenance could not be verified."
+                f"{marker_text}"
+            ),
+            "confidence": None,
+        }
+
+    return None
+
+def _rule_identity_fraud(face_count: int, verdict: str, manipulation_score: float, **kwargs):
     if face_count > 0 and verdict == "manipulated":
         return {
             "tag_code": "identity_fraud",
@@ -46,11 +75,11 @@ def _rule_identity_fraud(face_count: int, verdict: str, manipulation_score: floa
     return None
 
 
-def _rule_manipulated_no_face(face_count: int, verdict: str, manipulation_score: float):
+def _rule_manipulated_no_face(face_count: int, verdict: str, manipulation_score: float, **kwargs):
     if face_count == 0 and verdict == "manipulated":
         return {
             "tag_code": "manipulated_media",
-            "tag_label": "Manipulated Media (No Face Detected)",
+            "tag_label": "Possible Manipulated Media (No Face Detected)",
             "rule_description": (
                 f"No faces detected, but forensic verdict was 'manipulated' "
                 f"(score {manipulation_score:.3f}). Likely non-portrait image splicing "
@@ -61,7 +90,7 @@ def _rule_manipulated_no_face(face_count: int, verdict: str, manipulation_score:
     return None
 
 
-def _rule_inconclusive(face_count: int, verdict: str, manipulation_score: float):
+def _rule_inconclusive(face_count: int, verdict: str, manipulation_score: float, **kwargs):
     if verdict == "inconclusive":
         return {
             "tag_code": "requires_human_review",
@@ -76,14 +105,31 @@ def _rule_inconclusive(face_count: int, verdict: str, manipulation_score: float)
     return None
 
 
-def _rule_authentic(face_count: int, verdict: str, manipulation_score: float):
-    if verdict == "authentic":
+def _rule_missing_provenance(face_count: int, verdict: str, manipulation_score: float, has_exif_discrepancy: bool = False, ai_metadata_detected: bool = False, ai_metadata_markers: list[str] | None = None, provenance_status: str = "none",): 
+    if (provenance_status == "none" and not ai_metadata_detected and verdict == "authentic" and has_exif_discrepancy):
+        return {
+            "tag_code": "requires_human_review",
+            "tag_label": "Unverified Provenance — Requires Human Review",
+            "rule_description": (
+                f"Visual classifier scored 'authentic' ({manipulation_score:.3f}), but "
+                "camera EXIF metadata is missing or shows editing software. Routed to "
+                "human review rather than auto-approving."
+            ),
+            "confidence": round(1.0 - manipulation_score, 4),
+        }
+    
+    return None
+
+
+def _rule_authentic(face_count: int, verdict: str, manipulation_score: float, has_exif_discrepancy: bool = False, ai_metadata_detected: bool = False, ai_metadata_markers: list[str] | None = None, provenance_status: str = "none",):
+    if ( provenance_status == "none" and not ai_metadata_detected and verdict == "authentic" and not has_exif_discrepancy):
+        # Keep the existing tag dictionary here.
         return {
             "tag_code": "likely_authentic",
             "tag_label": "Likely Authentic Media",
             "rule_description": (
                 f"Forensic verdict was 'authentic' (score {manipulation_score:.3f}) "
-                f"with {face_count} face(s) detected. No manipulation indicators found."
+                f"with valid camera metadata and {face_count} face(s) detected."
             ),
             "confidence": round(1.0 - manipulation_score, 4),
         }
@@ -91,14 +137,25 @@ def _rule_authentic(face_count: int, verdict: str, manipulation_score: float):
 
 
 RULES = [
-    _rule_identity_fraud,
+    _rule_ai_metadata,
     _rule_manipulated_no_face,
     _rule_inconclusive,
+    _rule_missing_provenance,
     _rule_authentic,
 ]
 
 
-def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manipulation_score: float = 0.0,) -> list[dict]:
+def generate_tags(
+    image_path: str,
+    face_count: int = 0,
+    verdict: str = "",
+    manipulation_score: float = 0.0,
+    has_exif_discrepancy: bool = False,
+    ai_metadata_detected: bool = False,
+    ai_metadata_markers: list[str] | None = None,
+    provenance_status: str = "none",
+) -> list[dict]:
+    
     tags = []
     seen = set()
 
@@ -123,7 +180,7 @@ def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manip
                         })
         except Exception as exc:
             logger.warning("YOLO object tagging failed (%s).", exc)
-            
+
     elif face_count > 0:
         seen.add("person")
         tags.append({
@@ -135,10 +192,17 @@ def generate_tags(image_path: str, face_count: int = 0, verdict: str = "", manip
 
     # Always evaluate legal mapping rules regardless of whether YOLO is installed
     for rule_fn in RULES:
-        result = rule_fn(face_count, verdict, manipulation_score)
+        result = rule_fn(
+            face_count=face_count,
+            verdict=verdict,
+            manipulation_score=manipulation_score,
+            has_exif_discrepancy=has_exif_discrepancy,
+            ai_metadata_detected=ai_metadata_detected,
+            ai_metadata_markers=ai_metadata_markers,
+            provenance_status=provenance_status,
+        )
         if result and result["tag_code"] not in seen:
             seen.add(result["tag_code"])
             tags.append(result)
 
     return tags
-

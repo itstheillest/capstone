@@ -157,6 +157,7 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             "gps_longitude": getattr(exif_obj, "gps_longitude", None),
             "has_discrepancy": getattr(exif_obj, "has_discrepancy", True),
             "discrepancy_notes": getattr(exif_obj, "discrepancy_notes", ""),
+            "c2pa": (getattr(exif_obj, "raw_exif", {}) or {}).get("PixifAI:C2PA", {}),
         }
 
     def get_faces(self, obj):

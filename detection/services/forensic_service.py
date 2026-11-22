@@ -9,6 +9,7 @@ Combines:
 """
 
 import io
+import os 
 import logging
 from pathlib import Path
 import numpy as np
@@ -39,6 +40,29 @@ except ImportError:
 _cnn_model = None
 _cnn_metadata = None
 _cnn_transform = None
+
+def _band_from_env(default=0.10):
+    raw = os.environ.get("FORENSIC_INCONCLUSIVE_BAND", "")
+    try:
+        value = float(raw) if raw else default
+    except ValueError:
+        logger.warning("Bad FORENSIC_INCONCLUSIVE_BAND=%r; using %.2f", raw, default)
+        value = default
+    return min(max(value, 0.0), 0.5)
+
+
+# Half-width of the "inconclusive" zone around the checkpoint's threshold. 0.10 is a
+# placeholder: choose it from tools/sweep_threshold.py output and set it in .env.
+INCONCLUSIVE_BAND = _band_from_env()
+
+
+def decide_verdict(real_probability: float, threshold: float, band: float) -> str:
+    """AI below threshold-band, real at/above threshold+band, inconclusive in between."""
+    if real_probability < threshold - band:
+        return "manipulated"
+    if real_probability >= threshold + band:
+        return "authentic"
+    return "inconclusive"
 
 #bsgcasa/ai-vs-real-image-detector built on EfficientNet-B0, trained on 14k real vs AI-generated images. Sourced from Hugging Face https://huggingface.co/bsgcasa/ai-vs-real-image-detector
 CNN_WEIGHTS_PATH = Path(settings.BASE_DIR) / "model_weights" / "efficientnet_b0_forensic_clean.pth"
@@ -270,9 +294,11 @@ def analyze(image_path: str) -> dict:
         real_threshold = _cnn_metadata["threshold"]
 
         manipulation_score = ai_probability
-        verdict = "authentic" if real_probability >= real_threshold else "manipulated"
+        
+        verdict = decide_verdict(real_probability, _cnn_metadata["threshold"], INCONCLUSIVE_BAND)
+        
         model_name = "EfficientNet-B0 AI-vs-Real"
-        model_version = "candidate-1"
+        model_version = f"candidate-1 cutoff={_cnn_metadata['threshold']:.2f} band={INCONCLUSIVE_BAND:.2f}"
         
         logger.info(
             "Classifier check: model=%s ai_probability=%.4f real_probability=%.4f real_threshold=%.4f verdict=%s",

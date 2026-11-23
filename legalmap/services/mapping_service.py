@@ -50,7 +50,6 @@ TAG_TO_PROVISIONS: dict[str, list[tuple[str, str]]] = {
         ("SB 758", ""),                 # Deepfake Regulation and Digital Identity Protection Act (pending)
     ],
     "manipulated_media": [
-        ("RA 10175", "Sec. 4(c)(4)"),   # Cyberlibel
         ("HB 3214", ""),                # Deepfake Regulation Act (pending)
         ("SB 758", ""),                 # Deepfake Regulation and Digital Identity Protection Act (pending)
     ],
@@ -62,9 +61,7 @@ TAG_TO_PROVISIONS: dict[str, list[tuple[str, str]]] = {
 
     # --- Enrichment-path sentinel codes (set by apply_mappings kwargs) ---
     "face_privacy_violation": [
-        ("RA 10173", "Sec. 25"),        # Data Privacy Act — unauthorized processing of biometrics
-        ("RA 9995", "Sec. 4"),          # Anti-Photo and Video Voyeurism Act
-        ("SB 758", ""),                 # Digital Identity Protection Act (pending)
+       
     ],
     "debunked_fact_check": [
         ("RA 10175", "Sec. 4(c)(4)"),   # Cyberlibel — false content spread via network
@@ -72,7 +69,6 @@ TAG_TO_PROVISIONS: dict[str, list[tuple[str, str]]] = {
     ],
     "reverse_image_hit": [
         ("RA 10173", "Sec. 25"),        # Unauthorized use/distribution of identifiable image
-        ("RA 9995", "Sec. 4"),          # Photo/video voyeurism if intimate context
     ],
 }
 

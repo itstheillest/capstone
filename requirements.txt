@@ -64,3 +64,5 @@ huggingface_hub
 
 #image metadata inspector
 c2pa-python
+
+pytesseract  # OCR wrapper; Tesseract executable is installed in the Docker image.

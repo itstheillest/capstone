@@ -45,6 +45,9 @@ class ImageSubmission(models.Model):
     def __str__(self):
         return f"{self.original_filename} ({self.status})"
 
+    ocr_status = models.CharField(max_length=20, default="pending")
+    extracted_text = models.TextField(blank=True)
+    ocr_confidence = models.FloatField(null=True, blank=True)
 
 class ExifMetadata(models.Model):
     """Metadata forensics pulled via ExifTool."""

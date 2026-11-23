@@ -123,7 +123,10 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             "report",
             "reverse_matches",
             "fact_check_references",
-            "fact_check_status"
+            "fact_check_status",
+            "ocr_status",
+            "extracted_text",
+            "ocr_confidence",
         ]
         read_only_fields = [
             "id",
@@ -133,6 +136,9 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             "status",
             "submitted_at",
             "completed_at",
+            "ocr_status",
+            "extracted_text",
+            "ocr_confidence",
         ]
 
     def get_exif(self, obj):

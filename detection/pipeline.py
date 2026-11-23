@@ -25,6 +25,7 @@ from detection.models import (
 from detection.services import exif_service, face_service, forensic_service, tagging_service
 from detection.services.factcheck_service import FactCheckService
 from legalmap.services import mapping_service
+from detection.services import ocr_service
 
 logger = logging.getLogger(__name__)
 
@@ -57,8 +58,15 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
     submission.save(update_fields=["status"])
 
     image_path = submission.image.path
-
     try:
+        ocr_result = ocr_service.extract_text(image_path)
+        submission.ocr_status = ocr_result["status"]
+        submission.extracted_text = ocr_result["text"]
+        submission.ocr_confidence = ocr_result["confidence"]
+        submission.save(
+            update_fields=["ocr_status", "extracted_text", "ocr_confidence"]
+        )
+
         # --- 1. EXIF Analysis ---
         exif_data = exif_service.extract_exif(image_path)
         
@@ -180,7 +188,7 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         )
 
         # --- 6. Fact Checking & Reverse Search Layer ---
-        context_query = " ".join([t["tag_label"] for t in tags]) if tags else ""
+        context_query = ocr_result["text"]
         process_fact_checking_layer(
             submission=submission,
             report=report,

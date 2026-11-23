@@ -311,6 +311,11 @@
                 <h3 class="text-sm font-bold text-zinc-900">Web Detection & Fact-Check References</h3>
                 <span id="res-web-count" class="text-[11px] font-mono text-zinc-500">0 records</span>
               </div>
+              <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-3 space-y-1">
+                <h4 class="text-xs font-semibold text-zinc-800">Text recognized in image (OCR)</h4>
+                <p id="ocr-status" class="text-xs text-zinc-600"></p>
+                <p id="ocr-text" class="text-xs text-zinc-700 whitespace-pre-wrap break-words"></p>
+              </div>
               <div id="res-web-matches" class="space-y-2 text-xs"></div>
               <div id="res-fact-checks" class="space-y-2 text-xs pt-2 border-t border-zinc-100"></div>
             </div>
@@ -680,6 +685,18 @@
       }
 
       // 7. Web Intelligence & Fact-Checks (vision_service.py + factcheck_service.py)
+      document.getElementById('ocr-status').textContent =
+        data.ocr_status === 'text_found'
+          ? 'Text detected — verify the transcription'
+          : data.ocr_status === 'no_text'
+            ? 'No readable text found'
+            : data.ocr_status === 'unavailable'
+              ? 'Text extraction was unavailable'
+              : 'Text extraction status is unknown';
+
+      document.getElementById('ocr-text').textContent =
+        data.extracted_text || 'No text was extracted from this image.';
+
       const matches = data.reverse_matches || [];
       const factChecks = data.fact_check_references || [];
       const webMatchesEl = document.getElementById('res-web-matches');

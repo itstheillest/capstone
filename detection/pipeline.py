@@ -5,7 +5,7 @@ EXIF check -> Face detection -> Forensic analysis -> Tagging -> Report & Legal m
 Each step writes its own AuditLog entry. Any failure marks the submission 
 FAILED with the error logged.
 """
-
+import os
 import logging
 from django.utils import timezone
 from django.db import transaction
@@ -22,12 +22,20 @@ from detection.models import (
     TaggingResult,
 )
 
-from detection.services import exif_service, face_service, forensic_service, tagging_service
+from detection.services import (
+    exif_service,
+    face_service,
+    forensic_service,
+    tagging_service,
+    teachable_machine_service,
+)
+
 from detection.services.factcheck_service import FactCheckService
 from legalmap.services import mapping_service
 from detection.services import ocr_service
 
 logger = logging.getLogger(__name__)
+
 
 def resolve_final_verdict(
     visual_verdict: str,
@@ -110,9 +118,25 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
 
         # --- 3. Forensic Analysis ---
         forensic_result = forensic_service.analyze(image_path)
+        teachable_result = None
         
         visual_verdict = forensic_result["verdict"]
         final_verdict, decision_basis = resolve_final_verdict(visual_verdict, provenance_status,)
+        
+        if os.getenv("TEACHABLE_MACHINE_ENABLED", "false").lower() == "true":
+            try:
+                teachable_result = teachable_machine_service.predict(image_path)
+            except Exception:
+                logger.exception(
+                    "Experimental Teachable Machine inference failed for submission %s",
+                    submission.id,
+                )
+                teachable_result = {
+                    "model": "Teachable Machine image classifier",
+                    "version": "tm-export-1",
+                    "status": "error",
+                    "available": False,
+                }
         
         ForensicAnalysis.objects.update_or_create(
             submission=submission,
@@ -132,6 +156,7 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
                 "verdict": visual_verdict,
                 "score": forensic_result["manipulation_score"],
                 "model": forensic_result["model_name"],
+                "teachable_machine": teachable_result,
             },
             actor,
         )

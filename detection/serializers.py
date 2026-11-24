@@ -104,6 +104,7 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
     reverse_matches = ReverseImageMatchSerializer(many=True, read_only=True)
     fact_check_references = FactCheckReferenceSerializer(many=True, read_only=True)
     fact_check_status = serializers.SerializerMethodField()
+    experimental_classifier = serializers.SerializerMethodField()
 
     class Meta:
         model = ImageSubmission
@@ -127,6 +128,7 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
             "ocr_status",
             "extracted_text",
             "ocr_confidence",
+            "experimental_classifier",
         ]
         read_only_fields = [
             "id",
@@ -183,13 +185,27 @@ class ImageSubmissionSerializer(serializers.ModelSerializer):
         f_obj = _find_single_by_field(obj, "manipulation_score")
         if not f_obj:
             return None
+
+        model_name = getattr(
+            f_obj, "model_name", "PixifAI Spectral + ELA Heuristic Engine"
+        )
+        score = getattr(f_obj, "manipulation_score", 0.0)
+
         return {
-            "model_name": getattr(f_obj, "model_name", "PixifAI Spectral + ELA Heuristic Engine"),
+            "model_name": model_name,
             "model_version": getattr(f_obj, "model_version", "v1.1"),
-            "manipulation_score": getattr(f_obj, "manipulation_score", 0.0),
+            "manipulation_score": score,
+            "ai_probability": score if "AI-vs-Real" in model_name else None,
             "verdict": getattr(f_obj, "verdict", "authentic"),
             "anomaly_regions": getattr(f_obj, "anomaly_regions", []),
         }
+        
+    def get_experimental_classifier(self, obj):
+        log = obj.audit_logs.filter(action_type="forensic_analysis").first()
+        if not log:
+            return None
+        return (log.details or {}).get("teachable_machine")
+    
 
     def get_tags(self, obj):
         tag_objs = _find_many_by_field(obj, "tag_code")

@@ -66,3 +66,5 @@ huggingface_hub
 c2pa-python
 
 pytesseract  # OCR wrapper; Tesseract executable is installed in the Docker image.
+
+ai-edge-litert==2.2.0

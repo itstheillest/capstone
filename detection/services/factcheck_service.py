@@ -5,6 +5,7 @@ Google Fact Check Tools API integration.
 
 import os
 import logging
+import time
 import requests
 from django.conf import settings
 from detection.services.vision_service import vision_service, VisionService
@@ -88,8 +89,39 @@ class FactCheckService:
             "pageSize": 5,
         }
 
-        try:
-            response = requests.get(url, params=params, timeout=10)
+        retry_delays = (1, 2, 4)
+        retryable_statuses = {429, 500, 502, 503, 504}
+
+        for attempt in range(len(retry_delays) + 1):
+            try:
+                response = requests.get(url, params=params, timeout=10)
+            except requests.RequestException as exc:
+                if attempt < len(retry_delays):
+                    logger.warning(
+                        "Fact-check request failed; retrying (%s).",
+                        type(exc).__name__,
+                    )
+                    time.sleep(retry_delays[attempt])
+                    continue
+                logger.warning(
+                    "Fact-check lookup failed after retries (%s).",
+                    type(exc).__name__,
+                )
+                return {"status": "unavailable", "references": []}
+
+            if response.status_code in retryable_statuses:
+                if attempt < len(retry_delays):
+                    logger.warning(
+                        "Google Fact Check API returned HTTP %s; retrying.",
+                        response.status_code,
+                    )
+                    time.sleep(retry_delays[attempt])
+                    continue
+                logger.warning(
+                    "Google Fact Check API still returned HTTP %s after retries.",
+                    response.status_code,
+                )
+                return {"status": "unavailable", "references": []}
 
             if response.status_code != 200:
                 # Don't log the request URL: it contains the API key.
@@ -99,9 +131,13 @@ class FactCheckService:
                 )
                 return {"status": "unavailable", "references": []}
 
-            references = []
-            data = response.json()
+            try:
+                data = response.json()
+            except (ValueError, TypeError):
+                logger.warning("Google Fact Check API returned invalid JSON.")
+                return {"status": "unavailable", "references": []}
 
+            references = []
             for claim in data.get("claims", []):
                 for review in claim.get("claimReview", []) or []:
                     publisher_url = review.get("url", "")
@@ -123,10 +159,4 @@ class FactCheckService:
                 "references": references[:5],
             }
 
-        except (requests.RequestException, ValueError, TypeError) as exc:
-            # Log the exception type only; request errors can contain the API URL.
-            logger.warning(
-                "Google Fact Check lookup failed (%s).",
-                type(exc).__name__,
-            )
-            return {"status": "unavailable", "references": []}
+        return {"status": "unavailable", "references": []}

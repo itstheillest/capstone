@@ -1,14 +1,45 @@
 import os
 import time
-from django.conf import settings
 import logging
-from celery import shared_task
+
 from django.contrib.auth import get_user_model
-from detection.pipeline import process_submission
+from django.conf import settings
+from celery import shared_task
+
+from audit.models import AuditLog
+from detection.models import ImageSubmission
+from detection.pipeline import process_submission, retry_fact_check_lookup
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
+@shared_task
+def retry_fact_check_task(submission_id: str):
+    try:
+        return retry_fact_check_lookup(submission_id)
+    except Exception:
+        logger.exception(
+            "Fact-check-only retry failed for submission %s.",
+            submission_id,
+        )
+        try:
+            submission = ImageSubmission.objects.get(pk=submission_id)
+            AuditLog.objects.create(
+                submission=submission,
+                action_type=AuditLog.ActionType.FACT_CHECK,
+                details={
+                    "fact_check_status": "unavailable",
+                    "fact_checks_found": submission.fact_check_references.count(),
+                    "retry": True,
+                    "error": "Unexpected retry failure",
+                },
+            )
+        except ImageSubmission.DoesNotExist:
+            logger.warning(
+                "Cannot record retry failure; submission %s was not found.",
+                submission_id,
+            )
+        return "unavailable"
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=15)
 def process_submission_task(self, submission_id: str, actor_id: str | None = None):

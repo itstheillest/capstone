@@ -230,14 +230,25 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
     """
     # 1. Reverse Image Search
     matches = FactCheckService.perform_reverse_image_search(image_path)
-    for m in matches:
-        ReverseImageMatch.objects.create(
-            submission=submission,
-            page_url=m.get("page_url", ""),
-            domain=m.get("domain", ""),
-            similarity_score=m.get("similarity_score", 0.0),
-            match_type=m.get("match_type", "UNKNOWN"),
-        )
+    if matches:
+        unique_matches = {
+            match["page_url"]: match
+            for match in matches
+            if match.get("page_url")
+        }
+        with transaction.atomic():
+            submission.reverse_matches.all().delete()
+            ReverseImageMatch.objects.bulk_create([
+                ReverseImageMatch(
+                    submission=submission,
+                    page_url=match["page_url"],
+                    image_url=match.get("image_url", ""),
+                    domain=match.get("domain", ""),
+                    similarity_score=match.get("similarity_score", 0.0),
+                    match_type=match.get("match_type", "UNKNOWN"),
+                )
+                for match in unique_matches.values()
+            ])
 
     # 2. Fact Check Lookup
     search_query = context_query
@@ -246,15 +257,8 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
     if search_query and search_query.strip():
         lookup = FactCheckService.query_fact_check_tools(search_query)
 
-        for ref in lookup["references"]:
-            FactCheckReference.objects.create(
-                submission=submission,
-                claim_text=ref.get("claim_text", ""),
-                publisher_name=ref.get("publisher_name", ""),
-                publisher_url=ref.get("publisher_url", ""),
-                rating=ref.get("rating", ""),
-                review_date=ref.get("review_date", timezone.now().date()),
-            )
+    if lookup["status"] in {"found", "no_results"}:
+        _replace_fact_check_references(submission, lookup["references"])
 
     # 3. Log Audit Action
     action_type = getattr(AuditLog.ActionType, "FACT_CHECK", "FACT_CHECK")
@@ -268,6 +272,59 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
         },
         actor,
     )
+
+
+def _replace_fact_check_references(submission, references):
+    unique_references = {}
+    for reference in references:
+        publisher_url = reference.get("publisher_url", "")
+        if publisher_url.startswith(("https://", "http://")):
+            unique_references[(publisher_url, reference.get("claim_text", ""))] = reference
+
+    with transaction.atomic():
+        FactCheckReference.objects.filter(submission=submission).delete()
+        FactCheckReference.objects.bulk_create([
+            FactCheckReference(
+                submission=submission,
+                claim_text=reference.get("claim_text", ""),
+                claimant=reference.get("claimant", ""),
+                publisher_name=reference.get("publisher_name", "Unknown"),
+                publisher_url=reference["publisher_url"],
+                rating=reference.get("rating", "Unrated"),
+                review_date=reference.get("review_date") or timezone.now().date(),
+            )
+            for reference in unique_references.values()
+        ])
+
+
+def retry_fact_check_lookup(submission_id: str) -> str:
+    """Retry only the fact-check lookup using the saved OCR text."""
+    submission = ImageSubmission.objects.get(pk=submission_id)
+    query_text = submission.extracted_text.strip()
+
+    if not query_text:
+        lookup = {"status": "not_searched", "references": []}
+    else:
+        lookup = FactCheckService.query_fact_check_tools(query_text)
+
+    # Replace results only after a completed lookup. If the API is still
+    # unavailable, keep any previously successful results intact.
+    with transaction.atomic():
+        if lookup["status"] in {"found", "no_results"}:
+            _replace_fact_check_references(submission, lookup["references"])
+
+        _log(
+            submission,
+            AuditLog.ActionType.FACT_CHECK,
+            {
+                "matches_found": submission.reverse_matches.count(),
+                "fact_checks_found": len(lookup["references"]),
+                "fact_check_status": lookup["status"],
+                "retry": True,
+            },
+        )
+
+    return lookup["status"]
 
 
 def trigger_image_pipeline(submission_id: str, async_execution: bool = True):

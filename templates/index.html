@@ -318,6 +318,14 @@
               </div>
               <div id="res-web-matches" class="space-y-2 text-xs"></div>
               <div id="res-fact-checks" class="space-y-2 text-xs pt-2 border-t border-zinc-100"></div>
+
+              <button
+                id="retry-fact-check-btn"
+                type="button"
+                class="hidden rounded-lg border border-zinc-300 px-3 py-2 text-xs hover:bg-zinc-50 disabled:opacity-50"
+              >
+                Retry fact-check lookup
+              </button>
             </div>
 
           </div>
@@ -744,8 +752,75 @@
           'Fact-check lookup status is unknown.';
       }
 
+      const retryButton = document.getElementById('retry-fact-check-btn');
+      retryButton.classList.toggle(
+        'hidden',
+        data.fact_check_status !== 'unavailable'
+      );
+      retryButton.disabled = false;
+
       lucide.createIcons();
     }
+
+    document.getElementById('retry-fact-check-btn').addEventListener('click', async () => {
+      const button = document.getElementById('retry-fact-check-btn');
+      const statusEl = document.getElementById('res-fact-checks');
+      const submissionId = currentData?.id;
+
+      if (!submissionId) return;
+
+      button.disabled = true;
+      statusEl.textContent = 'Fact-check retry queued…';
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/submissions/${submissionId}/retry-fact-check/`,
+          {
+            method: 'POST',
+            headers: authHeaders()
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          statusEl.textContent = error.detail || 'Could not queue the retry.';
+          button.disabled = false;
+          return;
+        }
+
+        const pollRetry = async () => {
+          try {
+            const result = await fetch(
+              `${API_BASE}/submissions/${submissionId}/`,
+              { headers: authHeaders() }
+            );
+
+            if (!result.ok) {
+              statusEl.textContent = 'Could not refresh the fact-check status.';
+              button.disabled = false;
+              return;
+            }
+
+            const updatedData = await result.json();
+            if (updatedData.fact_check_status === 'pending') {
+              statusEl.textContent = 'Fact-check lookup is retrying…';
+              setTimeout(pollRetry, 3000);
+              return;
+            }
+
+            showResults(updatedData);
+          } catch (error) {
+            statusEl.textContent = `Could not refresh status: ${error.message}`;
+            button.disabled = false;
+          }
+        };
+
+        setTimeout(pollRetry, 2000);
+      } catch (error) {
+        statusEl.textContent = `Retry request failed: ${error.message}`;
+        button.disabled = false;
+      }
+    });
 
     // Reset button
     document.getElementById('reset-btn').onclick = () => {

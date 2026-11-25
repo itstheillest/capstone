@@ -1,0 +1,574 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-black antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixifAI — Sign In</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Geist', 'sans-serif'],
+            mono: ['Geist Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+    body {
+      font-family: 'Geist', sans-serif;
+    }
+    .font-mono {
+      font-family: 'Geist Mono', monospace;
+    }
+    .monochrome-fallback {
+      background:
+        radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.16) 0%, rgba(150, 150, 150, 0.06) 36%, rgba(0, 0, 0, 0.94) 78%),
+        linear-gradient(180deg, #1b1b1b 0%, #050505 100%);
+    }
+    /* Prevent browser autofill from injecting colored backgrounds onto transparent glass inputs */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    input:-webkit-autofill:active {
+      -webkit-text-fill-color: #ffffff !important;
+      caret-color: #ffffff !important;
+      -webkit-box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.01) inset !important;
+      transition: background-color 9999s ease-in-out 0s;
+    }
+  </style>
+</head>
+<body class="min-h-[100dvh] flex flex-col justify-between bg-black text-white relative overflow-x-hidden selection:bg-white selection:text-black">
+
+  <!-- Full-Viewport Monochrome Backdrop -->
+  <div class="fixed inset-0 z-0 pointer-events-none monochrome-fallback" aria-hidden="true">
+    <img
+      id="signin-backdrop-img"
+      src="{% static 'accounts/img/signin-bg.jpg' %}"
+      alt=""
+      class="w-full h-full object-cover object-center grayscale contrast-110 scale-[1.01]"
+      onerror="this.style.display='none'"
+    >
+    <div class="absolute inset-0 bg-gradient-to-b from-black/50 via-black/35 to-black/80"></div>
+  </div>
+
+  <!-- Minimal Top Header -->
+  <header class="relative z-10 w-full px-5 sm:px-8 pt-5 pb-2 flex items-center justify-between gap-4">
+    <div class="inline-flex items-center space-x-2.5 text-white select-none">
+      <svg class="w-7 h-7 text-white shrink-0" viewBox="0 0 100 100" fill="currentColor" aria-hidden="true">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="white" stroke-width="8" stroke-dasharray="14 6"/>
+        <path d="M50 20 A30 30 0 0 1 80 50 L65 50 A15 15 0 0 0 50 35 Z" fill="white"/>
+        <path d="M80 50 A30 30 0 0 1 50 80 L50 65 A15 15 0 0 0 65 50 Z" fill="white"/>
+        <path d="M50 80 A30 30 0 0 1 20 50 L35 50 A15 15 0 0 0 50 65 Z" fill="white"/>
+        <path d="M20 50 A30 30 0 0 1 50 20 L50 35 A15 15 0 0 0 35 50 Z" fill="white"/>
+      </svg>
+      <span class="font-bold text-base tracking-tight text-white">PixifAI</span>
+    </div>
+  </header>
+
+  <!-- Centered Frosted Glass Auth Card -->
+  <main class="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
+    <section
+      aria-label="Authentication"
+      class="w-full max-w-[420px] rounded-2xl border border-white/25 bg-black/45 backdrop-blur-xl px-6 py-8 sm:px-9 sm:py-10 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.24)]"
+    >
+
+      <!-- ================= VIEW 1: SIGN IN ================= -->
+      <div id="view-signin" class="space-y-6">
+        <div class="text-center">
+          <h1 class="text-2xl sm:text-[28px] font-semibold tracking-tight text-white">Welcome back</h1>
+          <p class="text-xs sm:text-[13px] text-white/75 mt-1.5">Please enter your details.</p>
+        </div>
+
+        <!-- Contextual Auth Required Notice -->
+        <div
+          id="auth-reason-banner"
+          class="hidden flex items-start gap-2.5 rounded-lg border border-white/25 bg-white/10 px-3.5 py-2.5 text-xs text-white/90"
+          role="status"
+        >
+          <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5 text-white/80"></i>
+          <span>Please sign in to upload and analyze visual evidence.</span>
+        </div>
+
+        <!-- Monochrome Error Box -->
+        <div
+          id="auth-error-msg"
+          class="hidden flex items-start gap-2.5 rounded-lg border border-white/35 bg-white/15 px-3.5 py-2.5 text-xs text-white"
+          role="alert"
+        >
+          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5 text-white"></i>
+          <span id="auth-error-text"></span>
+        </div>
+
+        <form id="jwt-login-form" class="space-y-5" novalidate>
+          <div>
+            <label for="login-username" class="block text-xs font-medium text-white/85 mb-1.5">
+              Username or Email
+            </label>
+            <input
+              id="login-username"
+              name="username"
+              type="text"
+              required
+              autocomplete="username"
+              placeholder="Enter your username or email"
+              class="w-full bg-transparent border-0 border-b border-white/35 focus:border-white focus:outline-none py-2.5 text-sm text-white placeholder:text-white/55 transition-colors"
+            >
+          </div>
+
+          <div>
+            <label for="login-password" class="block text-xs font-medium text-white/85 mb-1.5">
+              Password
+            </label>
+            <div class="relative flex items-center">
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                required
+                autocomplete="current-password"
+                placeholder="Enter your password"
+                class="w-full bg-transparent border-0 border-b border-white/35 focus:border-white focus:outline-none py-2.5 pr-9 text-sm text-white placeholder:text-white/55 transition-colors"
+              >
+              <button
+                type="button"
+                data-toggle-password="login-password"
+                aria-label="Toggle password visibility"
+                class="absolute right-0 p-1.5 text-white/55 hover:text-white transition"
+              >
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 pt-1 text-xs">
+            <label for="remember-me" class="inline-flex items-center gap-2 cursor-pointer select-none text-white/80 hover:text-white transition">
+              <input
+                id="remember-me"
+                type="checkbox"
+                checked
+                class="h-3.5 w-3.5 rounded border border-white/40 bg-transparent accent-white cursor-pointer"
+              >
+              <span>Remember me</span>
+            </label>
+
+            <button
+              id="show-forgot-btn"
+              type="button"
+              class="text-white/75 hover:text-white underline-offset-4 hover:underline transition font-medium"
+            >
+              Forgot password?
+            </button>
+          </div>
+
+          <button
+            id="signin-submit-btn"
+            type="submit"
+            class="w-full py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-zinc-200 active:bg-zinc-300 transition shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Log In
+          </button>
+        </form>
+
+        <p class="text-center text-xs text-white/75 pt-1">
+          Don't have an account?
+          <button
+            id="show-register-btn"
+            type="button"
+            class="text-white font-semibold hover:underline underline-offset-4 ml-1"
+          >
+            Register
+          </button>
+        </p>
+      </div>
+
+      <!-- ================= VIEW 2: REGISTER ================= -->
+      <div id="view-register" class="hidden space-y-5">
+        <div class="text-center">
+          <h1 class="text-2xl sm:text-[28px] font-semibold tracking-tight text-white">Create account</h1>
+          <p class="text-xs sm:text-[13px] text-white/75 mt-1.5">Register a PixifAI analyst account.</p>
+        </div>
+
+        <div
+          id="register-error-msg"
+          class="hidden flex items-start gap-2.5 rounded-lg border border-white/35 bg-white/15 px-3.5 py-2.5 text-xs text-white"
+          role="alert"
+        >
+          <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5 text-white"></i>
+          <span id="register-error-text"></span>
+        </div>
+
+        <form id="register-form" class="space-y-4" novalidate>
+          <div>
+            <label for="reg-username" class="block text-xs font-medium text-white/85 mb-1">
+              Username
+            </label>
+            <input
+              id="reg-username"
+              name="username"
+              type="text"
+              required
+              autocomplete="username"
+              placeholder="Choose a username"
+              class="w-full bg-transparent border-0 border-b border-white/35 focus:border-white focus:outline-none py-2 text-sm text-white placeholder:text-white/55 transition-colors"
+            >
+          </div>
+
+          <div>
+            <label for="reg-email" class="block text-xs font-medium text-white/85 mb-1">
+              Email
+            </label>
+            <input
+              id="reg-email"
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="Enter your email"
+              class="w-full bg-transparent border-0 border-b border-white/35 focus:border-white focus:outline-none py-2 text-sm text-white placeholder:text-white/55 transition-colors"
+            >
+          </div>
+
+          <div>
+            <label for="reg-password" class="block text-xs font-medium text-white/85 mb-1">
+              Password
+            </label>
+            <div class="relative flex items-center">
+              <input
+                id="reg-password"
+                name="password"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="Create a password (min. 8 chars)"
+                class="w-full bg-transparent border-0 border-b border-white/35 focus:border-white focus:outline-none py-2 pr-9 text-sm text-white placeholder:text-white/55 transition-colors"
+              >
+              <button
+                type="button"
+                data-toggle-password="reg-password"
+                aria-label="Toggle password visibility"
+                class="absolute right-0 p-1.5 text-white/55 hover:text-white transition"
+              >
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label for="reg-password-confirm" class="block text-xs font-medium text-white/85 mb-1">
+              Confirm Password
+            </label>
+            <div class="relative flex items-center">
+              <input
+                id="reg-password-confirm"
+                name="password_confirm"
+                type="password"
+                required
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="Confirm your password"
+                class="w-full bg-transparent border-0 border-b border-white/35 focus:border-white focus:outline-none py-2 pr-9 text-sm text-white placeholder:text-white/55 transition-colors"
+              >
+              <button
+                type="button"
+                data-toggle-password="reg-password-confirm"
+                aria-label="Toggle password confirmation visibility"
+                class="absolute right-0 p-1.5 text-white/55 hover:text-white transition"
+              >
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <button
+            id="register-submit-btn"
+            type="submit"
+            class="w-full py-3 mt-2 rounded-xl bg-white text-black font-semibold text-sm hover:bg-zinc-200 active:bg-zinc-300 transition shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Create Account
+          </button>
+        </form>
+
+        <p class="text-center text-xs text-white/75 pt-1">
+          Already have an account?
+          <button
+            id="back-to-signin-from-reg"
+            type="button"
+            class="text-white font-semibold hover:underline underline-offset-4 ml-1"
+          >
+            Sign In
+          </button>
+        </p>
+      </div>
+
+      <!-- ================= VIEW 3: FORGOT PASSWORD INFO ================= -->
+      <div id="view-forgot" class="hidden space-y-6">
+        <div class="text-center space-y-2">
+          <div class="mx-auto w-10 h-10 rounded-full border border-white/25 bg-white/10 flex items-center justify-center">
+            <i data-lucide="key-round" class="w-4 h-4 text-white"></i>
+          </div>
+          <h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-white">Password Recovery</h1>
+          <p class="text-xs text-white/70 leading-relaxed">
+            For security, PixifAI analyst password resets are managed by your system administrator.
+          </p>
+        </div>
+
+        <div class="rounded-xl border border-white/20 bg-white/[0.06] p-4 text-xs text-white/80 space-y-2 leading-relaxed">
+          <p>Contact your PixifAI administrator to reset your account credentials, or access the Django administration portal if you hold staff privileges.</p>
+          <a
+            href="/admin/"
+            class="inline-flex items-center gap-1.5 text-white font-semibold underline underline-offset-4 hover:text-zinc-200 transition pt-1"
+          >
+            <span>Open Admin Portal</span>
+            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+          </a>
+        </div>
+
+        <button
+          id="back-to-signin-from-forgot"
+          type="button"
+          class="w-full py-3 rounded-xl bg-white text-black font-semibold text-sm hover:bg-zinc-200 transition shadow-lg inline-flex items-center justify-center gap-2"
+        >
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Back to Sign In</span>
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Minimal Footer -->
+  <footer class="relative z-10 text-center pb-5 px-4">
+    <p class="text-[11px] text-white/45 tracking-wide">PixifAI &middot; Digital Media Forensics</p>
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const TOKEN_KEYS = ['access_token', 'refresh_token', 'auth_username'];
+
+    function getSafeNextUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const raw = (params.get('next') || '').trim();
+      if (raw && raw.startsWith('/') && !raw.startsWith('//') && !raw.startsWith('/\\')) {
+        return raw;
+      }
+      return '/';
+    }
+
+    function getCookie(name) {
+      const prefix = `${name}=`;
+      const parts = document.cookie ? document.cookie.split(';') : [];
+      for (let i = 0; i < parts.length; i += 1) {
+        const cookie = parts[i].trim();
+        if (cookie.startsWith(prefix)) {
+          return decodeURIComponent(cookie.slice(prefix.length));
+        }
+      }
+      return '';
+    }
+
+    function jsonRequestHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      const csrfToken = getCookie('csrftoken');
+      if (csrfToken) {
+        headers['X-CSRFToken'] = csrfToken;
+      }
+      return headers;
+    }
+
+    function getStoredToken() {
+      return localStorage.getItem('access_token') || sessionStorage.getItem('access_token') || '';
+    }
+
+    function clearAuthStorage() {
+      TOKEN_KEYS.forEach((key) => {
+        localStorage.removeItem(key);
+        sessionStorage.removeItem(key);
+      });
+    }
+
+    function saveAuthTokens(data, fallbackUsername, rememberMe) {
+      clearAuthStorage();
+      const target = rememberMe ? localStorage : sessionStorage;
+      target.setItem('access_token', data.access);
+      if (data.refresh) {
+        target.setItem('refresh_token', data.refresh);
+      }
+      const resolvedUsername = (data.user && data.user.username) || fallbackUsername || '';
+      if (resolvedUsername) {
+        target.setItem('auth_username', resolvedUsername);
+      }
+    }
+
+    function showError(boxId, textId, message) {
+      document.getElementById(textId).innerText = message;
+      document.getElementById(boxId).classList.remove('hidden');
+    }
+
+    function hideErrors() {
+      document.getElementById('auth-error-msg').classList.add('hidden');
+      document.getElementById('register-error-msg').classList.add('hidden');
+    }
+
+    function extractApiError(payload, fallback) {
+      if (!payload || typeof payload !== 'object') return fallback;
+      if (typeof payload.detail === 'string') return payload.detail;
+      if (typeof payload.error === 'string') return payload.error;
+      const parts = [];
+      Object.entries(payload).forEach(([field, val]) => {
+        if (Array.isArray(val) && val.length) {
+          parts.push(field === 'non_field_errors' ? val.join(' ') : `${field}: ${val.join(' ')}`);
+        } else if (typeof val === 'string') {
+          parts.push(`${field}: ${val}`);
+        }
+      });
+      return parts.length ? parts.join(' ') : fallback;
+    }
+
+    function switchView(targetId) {
+      hideErrors();
+      ['view-signin', 'view-register', 'view-forgot'].forEach((id) => {
+        document.getElementById(id).classList.toggle('hidden', id !== targetId);
+      });
+      lucide.createIcons();
+    }
+
+    // Check URL reason banner and clear stale client tokens when unauthenticated
+    (function initPage() {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('reason') === 'auth_required') {
+        document.getElementById('auth-reason-banner').classList.remove('hidden');
+      }
+      clearAuthStorage();
+    })();
+
+    // Password visibility toggles
+    document.querySelectorAll('[data-toggle-password]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.togglePassword);
+        if (!input) return;
+        const showing = input.type === 'text';
+        input.type = showing ? 'password' : 'text';
+        btn.innerHTML = `<i data-lucide="${showing ? 'eye' : 'eye-off'}" class="w-4 h-4"></i>`;
+        lucide.createIcons();
+      });
+    });
+
+    // View toggles
+    document.getElementById('show-register-btn').addEventListener('click', () => switchView('view-register'));
+    document.getElementById('show-forgot-btn').addEventListener('click', () => switchView('view-forgot'));
+    document.getElementById('back-to-signin-from-reg').addEventListener('click', () => switchView('view-signin'));
+    document.getElementById('back-to-signin-from-forgot').addEventListener('click', () => switchView('view-signin'));
+
+    // Sign In submission
+    document.getElementById('jwt-login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErrors();
+
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const rememberMe = document.getElementById('remember-me').checked;
+      const submitBtn = document.getElementById('signin-submit-btn');
+
+      if (!username || !password) {
+        showError('auth-error-msg', 'auth-error-text', 'Please enter both your username/email and password.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Signing in...';
+
+      try {
+        const res = await fetch('/api/token/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: jsonRequestHeaders(),
+          body: JSON.stringify({
+            username,
+            password,
+            establish_session: true,
+            remember_me: rememberMe
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.access) {
+          saveAuthTokens(data, username, rememberMe);
+          window.location.replace(getSafeNextUrl());
+          return;
+        }
+        showError('auth-error-msg', 'auth-error-text', extractApiError(data, 'Invalid credentials. Please try again.'));
+      } catch (err) {
+        showError('auth-error-msg', 'auth-error-text', 'Network error connecting to authentication service.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Log In';
+      }
+    });
+
+    // Registration submission
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideErrors();
+
+      const username = document.getElementById('reg-username').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const passwordConfirm = document.getElementById('reg-password-confirm').value;
+      const rememberMe = document.getElementById('remember-me').checked;
+      const submitBtn = document.getElementById('register-submit-btn');
+
+      if (!username || !email || !password || !passwordConfirm) {
+        showError('register-error-msg', 'register-error-text', 'Please fill out all required fields.');
+        return;
+      }
+      if (password !== passwordConfirm) {
+        showError('register-error-msg', 'register-error-text', 'Passwords do not match.');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = 'Creating account...';
+
+      try {
+        const res = await fetch('/api/accounts/register/', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: jsonRequestHeaders(),
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+            password_confirm: passwordConfirm,
+            establish_session: true,
+            remember_me: rememberMe
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.access) {
+          saveAuthTokens(data, username, rememberMe);
+          window.location.replace(getSafeNextUrl());
+          return;
+        }
+        showError('register-error-msg', 'register-error-text', extractApiError(data, 'Unable to register account.'));
+      } catch (err) {
+        showError('register-error-msg', 'register-error-text', 'Network error connecting to registration service.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -11,6 +11,7 @@ Combines:
 import io
 import logging
 from pathlib import Path
+import time
 import numpy as np
 from PIL import Image, ImageChops
 from django.conf import settings
@@ -62,6 +63,7 @@ AI_SIGNATURE_KEYWORDS = [
 
 
 def get_cnn_model():
+    """Loads EfficientNet-B0 only when trained forensic weights are present on disk."""
     global _cnn_model
     if not _has_torch or not CNN_WEIGHTS_PATH.exists():
         return None
@@ -81,13 +83,15 @@ def get_cnn_model():
 
 
 def _error_level_analysis(image_path: str) -> np.ndarray:
-    original = Image.open(image_path).convert("RGB")
-    buffer = io.BytesIO()
-    original.save(buffer, "JPEG", quality=ELA_QUALITY)
-    buffer.seek(0)
-    resaved = Image.open(buffer)
-    diff = ImageChops.difference(original, resaved)
-    return np.array(diff, dtype=np.float32)
+    with Image.open(image_path) as src:
+        original = src.convert("RGB")
+        buffer = io.BytesIO()
+        original.save(buffer, "JPEG", quality=ELA_QUALITY)
+        buffer.seek(0)
+        with Image.open(buffer) as resaved_src:
+            resaved = resaved_src.convert("RGB")
+            diff = ImageChops.difference(original, resaved)
+            return np.array(diff, dtype=np.float32)
 
 
 def _find_anomaly_regions(diff_array: np.ndarray) -> list[dict]:
@@ -147,14 +151,11 @@ def _analyze_synthetic_signals(image_path: str) -> tuple[float, list[dict]]:
         has_capture_date = bool(raw_exif and raw_exif.get(36867))
 
         if not has_camera_make and not has_capture_date:
-            # Stripped or synthetic origin
             score += 0.35
-            # High-res raw PNGs without camera EXIF are overwhelmingly synthetic/renders
             if fmt == "PNG" and max(width, height) >= 768:
                 score += 0.20
 
         # 3. Common Diffusion Resolution & Aspect Ratio Check
-        # Standard SDXL / Flux / Midjourney / DALL-E dimensions (multiples of 64 or 32 without camera EXIF)
         if not has_camera_make and (width % 32 == 0 or height % 32 == 0 or (width * height) >= 700000):
             score += 0.12
 
@@ -162,38 +163,43 @@ def _analyze_synthetic_signals(image_path: str) -> tuple[float, list[dict]]:
         rgb = np.array(img.convert("RGB"), dtype=np.float32)
         gray = rgb.mean(axis=2)
 
-        # Compute 2D Laplacian residual to measure high-frequency sensor noise vs diffusion smoothness
-        laplacian = (
-            -4 * gray[1:-1, 1:-1]
-            + gray[:-2, 1:-1]
-            + gray[2:, 1:-1]
-            + gray[1:-1, :-2]
-            + gray[1:-1, 2:]
-        )
-        hf_std = float(np.std(laplacian))
+        if gray.shape[0] >= 3 and gray.shape[1] >= 3:
+            laplacian = (
+                -4 * gray[1:-1, 1:-1]
+                + gray[:-2, 1:-1]
+                + gray[2:, 1:-1]
+                + gray[1:-1, :-2]
+                + gray[1:-1, 2:]
+            )
+            hf_std = float(np.std(laplacian))
+        else:
+            laplacian = None
+            hf_std = 0.0
 
-        # Cross-channel gradient correlation (R-G and G-B)
-        rg_corr = float(np.corrcoef(rgb[:, :, 0].ravel(), rgb[:, :, 1].ravel())[0, 1])
-        if np.isnan(rg_corr):
+        # Guard against zero-variance channels (solid-color test frames)
+        if float(np.std(rgb[:, :, 0])) > 0.0 and float(np.std(rgb[:, :, 1])) > 0.0:
+            rg_corr = float(np.corrcoef(rgb[:, :, 0].ravel(), rgb[:, :, 1].ravel())[0, 1])
+            if np.isnan(rg_corr):
+                rg_corr = 0.0
+        else:
             rg_corr = 0.0
 
-        # Synthetic renders exhibit high cross-channel structural correlation + specific HF energy bands
         if not has_camera_make:
             if rg_corr > 0.92 or (4.0 <= hf_std <= 28.0):
                 score += 0.18
 
-            # Flag high-gradient synthetic texture patches for telemetry visibility
-            h, w = gray.shape
-            step = ANOMALY_BLOCK_SIZE * 2
-            for y in range(0, h - step, step):
-                for x in range(0, w - step, step):
-                    patch_std = float(np.std(laplacian[y : y + step - 2, x : x + step - 2]))
-                    if patch_std > hf_std * 1.65:
-                        synthetic_regions.append({
-                            "box": [x, y, x + step, y + step],
-                            "label": "synthetic_frequency_artifact",
-                            "confidence": round(min(0.98, patch_std / (hf_std * 2.5)), 3),
-                        })
+            if laplacian is not None and hf_std > 0.0:
+                h, w = gray.shape
+                step = ANOMALY_BLOCK_SIZE * 2
+                for y in range(0, h - step, step):
+                    for x in range(0, w - step, step):
+                        patch_std = float(np.std(laplacian[y : y + step - 2, x : x + step - 2]))
+                        if patch_std > hf_std * 1.65:
+                            synthetic_regions.append({
+                                "box": [x, y, x + step, y + step],
+                                "label": "synthetic_frequency_artifact",
+                                "confidence": round(min(0.98, patch_std / (hf_std * 2.5)), 3),
+                            })
 
     return min(0.96, score), synthetic_regions[:24]
 
@@ -203,6 +209,8 @@ def analyze(image_path: str) -> dict:
     Runs multi-layer forensic analysis combining ELA splicing detection,
     AI/Synthetic frequency & provenance heuristics, and optional CNN weights.
     """
+    start_time = time.perf_counter()
+
     diff_array = _error_level_analysis(image_path)
     ela_regions = _find_anomaly_regions(diff_array)
 
@@ -217,8 +225,9 @@ def analyze(image_path: str) -> dict:
 
     model = get_cnn_model()
     if model is not None and transform is not None:
-        image = Image.open(image_path).convert("RGB")
-        tensor = transform(image).unsqueeze(0).to(device)
+        with Image.open(image_path) as src:
+            image = src.convert("RGB")
+            tensor = transform(image).unsqueeze(0).to(device)
 
         with torch.no_grad():
             outputs = model(tensor)
@@ -240,10 +249,13 @@ def analyze(image_path: str) -> dict:
     else:
         verdict = "authentic"
 
+    elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+
     return {
         "model_name": model_name,
         "model_version": model_version,
         "manipulation_score": manipulation_score,
         "verdict": verdict,
         "anomaly_regions": combined_regions,
+        "processing_time_ms": elapsed_ms,
     }

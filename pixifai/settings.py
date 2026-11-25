@@ -11,6 +11,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env if present
+load_dotenv(BASE_DIR / ".env")
 load_dotenv()
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -46,6 +47,7 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
+LOGIN_URL = '/signin/'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # High in stack for CORS preflight
@@ -142,15 +144,25 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Celery Configuration (Local In-Memory Mode)
-CELERY_BROKER_URL = 'memory://'
-CELERY_RESULT_BACKEND = 'cache+memory://'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_TASK_EAGER_PROPAGATES = True
+# Celery Configuration
+# Uses Redis broker when CELERY_BROKER_URL is injected (e.g., docker-compose.yml);
+# defaults to local in-memory eager mode for Windows dev without Redis.
+_configured_celery_broker = os.environ.get("CELERY_BROKER_URL", "").strip()
+if _configured_celery_broker and not _configured_celery_broker.startswith("memory://"):
+    CELERY_BROKER_URL = _configured_celery_broker
+    CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", _configured_celery_broker)
+    CELERY_TASK_ALWAYS_EAGER = os.environ.get("CELERY_TASK_ALWAYS_EAGER", "False").lower() in ("true", "1", "t")
+    CELERY_TASK_EAGER_PROPAGATES = os.environ.get("CELERY_TASK_EAGER_PROPAGATES", "False").lower() in ("true", "1", "t")
+else:
+    CELERY_BROKER_URL = "memory://"
+    CELERY_RESULT_BACKEND = "cache+memory://"
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
 
 
 # Django REST Framework Configuration
@@ -179,7 +191,9 @@ REST_FRAMEWORK = {
     },
 }
 
+FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY", "")
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
 
 # Swagger UI / OpenAPI Configuration
 SPECTACULAR_SETTINGS = {

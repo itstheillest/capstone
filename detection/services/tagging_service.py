@@ -6,6 +6,8 @@ and legal tags that drive the Philippine Law Mapping Layer (legalmap app).
 """
 
 import logging
+from pathlib import Path
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +15,7 @@ try:
     from ultralytics import YOLO
     _has_yolo = True
 except ImportError:
+    YOLO = None
     _has_yolo = False
 
 _yolo_model = None
@@ -23,8 +26,14 @@ def get_yolo_model():
     if not _has_yolo:
         return None
     if _yolo_model is None:
+        base_dir = Path(settings.BASE_DIR)
+        candidates = [
+            base_dir / "model_weights" / "yolov8n.pt",
+            base_dir / "yolov8n.pt",
+        ]
+        model_ref = next((str(p) for p in candidates if p.exists()), str(base_dir / "yolov8n.pt"))
         try:
-            _yolo_model = YOLO("yolov8n.pt")
+            _yolo_model = YOLO(model_ref)
         except Exception as exc:
             logger.warning("Could not load YOLOv8n model (%s); using rule-based tagging.", exc)
             return None

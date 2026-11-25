@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: pixifai
       POSTGRES_USER: pixifai
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-    ports:
-      - "5432:5432"
-
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pixifai -d pixifai"]
       interval: 5s
@@ -18,18 +16,28 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
-    ports:
-      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   web:
     build: .
     image: pixifai-app:latest
+    restart: unless-stopped
     env_file:
       - .env
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --noreload"
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             gunicorn pixifai.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120"
     volumes:
-      - .:/app
+      - media_data:/app/media
+      - ./pixifai-4ea9b6136cf4.json:/app/pixifai-4ea9b6136cf4.json:ro
     ports:
       - "${WEB_PORT:-8000}:8000"
     environment:
@@ -47,16 +55,18 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
 
   celery:
     image: pixifai-app:latest
     pull_policy: never
+    restart: unless-stopped
     env_file:
       - .env
     command: celery -A pixifai worker -l info --concurrency=2
     volumes:
-      - .:/app
+      - media_data:/app/media
+      - ./pixifai-4ea9b6136cf4.json:/app/pixifai-4ea9b6136cf4.json:ro
     environment:
       - OMP_NUM_THREADS=1
       - MKL_NUM_THREADS=1
@@ -75,5 +85,9 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
 
+volumes:
+  postgres_data:
+  redis_data:
+  media_data:

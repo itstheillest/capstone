@@ -2,13 +2,13 @@
 Orchestrates the full detection pipeline for one ImageSubmission:
 EXIF check -> Face detection -> Forensic analysis -> Tagging -> Report & Legal mapping -> Fact check & Reverse search -> Status update.
 
-Each step writes its own AuditLog entry. Any failure marks the submission 
+Each step writes its own AuditLog entry. Any failure marks the submission
 FAILED with the error logged.
 """
 import os
 import logging
-from django.utils import timezone
 from django.db import transaction
+from django.utils import timezone
 
 from audit.models import AuditLog
 from detection.models import (
@@ -35,6 +35,8 @@ from legalmap.services import mapping_service
 from detection.services import ocr_service
 
 logger = logging.getLogger(__name__)
+
+_VALID_MATCH_TYPES = {"EXACT", "PARTIAL", "SIMILAR"}
 
 
 def resolve_final_verdict(
@@ -146,6 +148,7 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
                 "manipulation_score": forensic_result["manipulation_score"],
                 "verdict": visual_verdict,
                 "anomaly_regions": forensic_result["anomaly_regions"],
+                "processing_time_ms": forensic_result.get("processing_time_ms"),
             },
         )
         
@@ -156,7 +159,9 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
                 "verdict": visual_verdict,
                 "score": forensic_result["manipulation_score"],
                 "model": forensic_result["model_name"],
+                "processing_time_ms": forensic_result.get("processing_time_ms"),
                 "teachable_machine": teachable_result,
+
             },
             actor,
         )
@@ -178,6 +183,12 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         
         for tag in tags:
             TaggingResult.objects.create(submission=submission, **tag)
+        _log(
+            submission,
+            AuditLog.ActionType.TAGGING,
+            {"tag_codes": [t["tag_code"] for t in tags]},
+            actor,
+        )
 
         # --- 5. Report & Law Mapping Layer ---
         tag_summary = ", ".join(t["tag_label"] for t in tags) if tags else "No tags generated."
@@ -213,7 +224,7 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         )
 
         # --- 6. Fact Checking & Reverse Search Layer ---
-        context_query = ocr_result["text"]
+        context_query = ocr_result["text"] or " ".join(t["tag_label"] for t in tags) if tags else ocr_result["text"]
         process_fact_checking_layer(
             submission=submission,
             report=report,
@@ -227,7 +238,7 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
         debunked_ratings = list(
             submission.fact_check_references.values_list("rating", flat=True)
         )
-        legal_mappings = mapping_service.apply_mappings(
+        mapping_service.apply_mappings(
             report,
             [t["tag_code"] for t in tags],
             face_count=face_count,
@@ -249,11 +260,18 @@ def process_submission(submission_id: str, actor=None) -> ImageSubmission:
     return submission
 
 
-def process_fact_checking_layer(submission: ImageSubmission, report=None, image_path: str = "", context_query: str = "", actor=None):
+def process_fact_checking_layer(
+    submission: ImageSubmission,
+    report=None,
+    image_path: str = "",
+    context_query: str = "",
+    actor=None,
+):
     """
-    Executes Reverse Search and Fact-Check Lookup, saving results to DB.
+    Executes Reverse Search and Fact-Check Lookup, saving results idempotently to DB.
     """
     # 1. Reverse Image Search
+    ReverseImageMatch.objects.filter(submission=submission).delete()
     matches = FactCheckService.perform_reverse_image_search(image_path)
     if matches:
         unique_matches = {
@@ -267,13 +285,21 @@ def process_fact_checking_layer(submission: ImageSubmission, report=None, image_
                 ReverseImageMatch(
                     submission=submission,
                     page_url=match["page_url"],
+                    page_title=(match.get("page_title") or "")[:512],
                     image_url=match.get("image_url", ""),
-                    domain=match.get("domain", ""),
+                    domain=(match.get("domain", "") or "")[:255],
                     similarity_score=match.get("similarity_score", 0.0),
                     match_type=match.get("match_type", "UNKNOWN"),
                 )
                 for match in unique_matches.values()
             ])
+
+    _log(
+        submission,
+        AuditLog.ActionType.REVERSE_SEARCH,
+        {"matches_found": len(matches)},
+        actor,
+    )
 
     # 2. Fact Check Lookup
     search_query = context_query
@@ -357,9 +383,9 @@ def trigger_image_pipeline(submission_id: str, async_execution: bool = True):
     Pipeline entry point to dispatch processing for an ImageSubmission.
     """
     try:
-        submission = ImageSubmission.objects.get(pk=submission_id)
+        ImageSubmission.objects.get(pk=submission_id)
     except ImageSubmission.DoesNotExist:
-        logger.error(f"Cannot run pipeline: Submission {submission_id} not found.")
+        logger.error("Cannot run pipeline: Submission %s not found.", submission_id)
         return False
 
     if async_execution:
@@ -369,4 +395,3 @@ def trigger_image_pipeline(submission_id: str, async_execution: bool = True):
         process_submission(str(submission_id))
 
     return True
-

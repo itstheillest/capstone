@@ -12,6 +12,7 @@ from django.core.exceptions import ImproperlyConfigured
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env if present
+load_dotenv(BASE_DIR / ".env")
 load_dotenv()
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
+LOGIN_URL = '/signin/'
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',  # High in stack for CORS preflight
@@ -145,12 +147,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery Configuration
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-CELERY_BROKER_URL = os.getenv(
-    "CELERY_BROKER_URL", "redis://localhost:6379/0"
-)
-CELERY_RESULT_BACKEND = os.getenv(
-    "CELERY_RESULT_BACKEND", "redis://localhost:6379/0"
-)
+_configured_celery_broker = os.environ.get("CELERY_BROKER_URL", "").strip()
+if _configured_celery_broker and not _configured_celery_broker.startswith("memory://"):
+    CELERY_BROKER_URL = _configured_celery_broker
+    CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", _configured_celery_broker)
+else:
+    CELERY_BROKER_URL = "memory://" if DEBUG else "redis://localhost:6379/0"
+    CELERY_RESULT_BACKEND = "cache+memory://" if DEBUG else "redis://localhost:6379/0"
 
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
@@ -190,7 +193,9 @@ REST_FRAMEWORK = {
     },
 }
 
+FACT_CHECK_API_KEY = os.getenv("FACT_CHECK_API_KEY", "")
 SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "")
 
 # Swagger UI / OpenAPI Configuration
 SPECTACULAR_SETTINGS = {

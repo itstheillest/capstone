@@ -4,7 +4,7 @@ EXIF metadata extraction and discrepancy detection.
 
 import logging
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone as dt_timezone
 from PIL.TiffImagePlugin import IFDRational
 import json
 import os
@@ -33,6 +33,12 @@ KNOWN_EDITOR_TAGS = [
     "firefly",
     "comfyui",
     "automatic1111",
+    "novelai",
+    "imagen",
+    "flux",
+    "gemini",
+    "c2pa",
+    "bing image creator",
 ]
 
 AI_PROVENANCE_KEYWORDS = [
@@ -57,6 +63,18 @@ AI_PROVENANCE_KEYWORDS = [
 AI_SOURCE_TYPE = (
     "http://cv.iptc.org/newscodes/digitalsourcetype/"
     "trainedAlgorithmicMedia"
+)
+
+
+_INFO_METADATA_KEYS = (
+    "Software",
+    "software",
+    "parameters",
+    "prompt",
+    "workflow",
+    "Generator",
+    "Comment",
+    "Description",
 )
 
 
@@ -150,24 +168,25 @@ def _sanitize_value(value):
     """
     if isinstance(value, dict):
         return {str(k): _sanitize_value(v) for k, v in value.items()}
-    elif isinstance(value, (list, tuple)):
+    if isinstance(value, (list, tuple)):
         return [_sanitize_value(v) for v in value]
-    elif isinstance(value, IFDRational):
+    if isinstance(value, IFDRational):
         return float(value) if value.denominator != 0 else 0.0
-    elif isinstance(value, bytes):
+    if isinstance(value, bytes):
         return value.decode("utf-8", errors="ignore")
-    elif isinstance(value, (int, float, str, bool)) or value is None:
+    if isinstance(value, (int, float, str, bool)) or value is None:
         return value
-    else:
-        return str(value)
+    return str(value)
 
 
 def _parse_exif_datetime(value):
+    """Parses EXIF timestamps into timezone-aware UTC datetimes for Django DateTimeField."""
     if not value:
         return None
-    for fmt in ("%Y:%m:%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"):
+    cleaned = str(value).strip()[:19]
+    for fmt in ("%Y:%m:%d %H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S"):
         try:
-            return datetime.strptime(str(value)[:19], fmt)
+            return datetime.strptime(cleaned, fmt).replace(tzinfo=dt_timezone.utc)
         except ValueError:
             continue
     return None
@@ -184,6 +203,36 @@ def _find_ai_provenance_markers(raw_exif: dict) -> list[str]:
             if kw in haystack and kw not in markers:
                 markers.append(kw)
     return markers
+
+
+def _rational_to_float(val) -> float | None:
+    if isinstance(val, IFDRational):
+        return float(val) if val.denominator != 0 else None
+    if isinstance(val, (tuple, list)) and len(val) == 2:
+        num, den = val
+        return float(num) / float(den) if den else None
+    if isinstance(val, (int, float)):
+        return float(val)
+    return None
+
+
+def _dms_to_decimal(dms, ref) -> float | None:
+    """Converts EXIF DMS (degrees, minutes, seconds) plus hemisphere ref into decimal degrees."""
+    if isinstance(dms, (int, float)):
+        decimal = float(dms)
+    elif isinstance(dms, (tuple, list)) and len(dms) == 3:
+        parts = [_rational_to_float(p) for p in dms]
+        if any(p is None for p in parts):
+            return None
+        deg, mins, secs = parts
+        decimal = deg + (mins / 60.0) + (secs / 3600.0)
+    else:
+        return None
+
+    ref_str = str(ref or "").strip().upper()
+    if ref_str in ("S", "W"):
+        decimal = -abs(decimal)
+    return round(decimal, 6)
 
 
 def _analyze_discrepancies(raw_exif: dict, has_camera_info: bool, software_tag: str):
@@ -225,20 +274,58 @@ def run_exiftool(image_path: str) -> dict:
 
 
 def run_pillow_fallback(image_path: str) -> dict:
+    """Extracts IFD0, Exif sub-IFD, GPSInfo sub-IFD, and PNG/container info tags via Pillow."""
     from PIL import ExifTags, Image
 
     try:
         with Image.open(image_path) as img:
             raw = img.getexif()
-            info_software = img.info.get("Software") or img.info.get("parameters") or ""
             result = {ExifTags.TAGS.get(k, str(k)): v for k, v in raw.items()} if raw else {}
 
             # Preserve PNG text chunks / XMP / comment fields for AI provenance scanning
-            for info_key, info_val in img.info.items():
+            # and inspect common container metadata for editing or generative software tags.
+            if raw:
+                # Extract Exif sub-IFD (DateTimeOriginal, lens metadata, etc.)
+                exif_ifd_tag = getattr(ExifTags.IFD, "Exif", 0x8769) if hasattr(ExifTags, "IFD") else 0x8769
+                try:
+                    exif_ifd = raw.get_ifd(exif_ifd_tag) or {}
+                    for k, v in exif_ifd.items():
+                        key_name = ExifTags.TAGS.get(k, str(k))
+                        if key_name not in result:
+                            result[key_name] = v
+                except Exception:
+                    pass
+
+                # Extract GPSInfo sub-IFD and convert DMS to signed decimal coordinates
+                gps_ifd_tag = getattr(ExifTags.IFD, "GPSInfo", 0x8825) if hasattr(ExifTags, "IFD") else 0x8825
+                try:
+                    gps_ifd = raw.get_ifd(gps_ifd_tag) or {}
+                    if gps_ifd:
+                        gps_named = {ExifTags.GPSTAGS.get(k, str(k)): v for k, v in gps_ifd.items()}
+                        lat = _dms_to_decimal(gps_named.get("GPSLatitude"), gps_named.get("GPSLatitudeRef"))
+                        lon = _dms_to_decimal(gps_named.get("GPSLongitude"), gps_named.get("GPSLongitudeRef"))
+                        if lat is not None:
+                            result["GPSLatitude"] = lat
+                        if lon is not None:
+                            result["GPSLongitude"] = lon
+                except Exception:
+                    pass
+
+            info = img.info or {}
+            for info_key, info_val in info.items():
                 if info_key not in ("icc_profile", "exif") and info_key not in result:
                     result[str(info_key)] = _sanitize_value(info_val)
 
-            info_software = img.info.get("Software") or img.info.get("parameters") or ""
+            for key in _INFO_METADATA_KEYS:
+                val = info.get(key)
+                if val:
+                    text_val = str(val).strip()
+                    if text_val and "Software" not in result:
+                        result["Software"] = text_val[:150]
+                    if text_val and f"Info:{key}" not in result:
+                        result[f"Info:{key}"] = text_val[:500]
+
+            info_software = info.get("Software") or info.get("parameters") or ""
             if info_software and "Software" not in result:
                 result["Software"] = str(info_software)[:150]
             return result
@@ -275,9 +362,15 @@ def extract_exif(image_path: str) -> dict:
         or raw_exif.get("Software", "")
         or ""
     )
-    capture_raw = raw_exif.get("EXIF:DateTimeOriginal") or raw_exif.get("DateTimeOriginal", "")
-    gps_lat = raw_exif.get("EXIF:GPSLatitude") or raw_exif.get("GPSLatitude")
-    gps_lon = raw_exif.get("EXIF:GPSLongitude") or raw_exif.get("GPSLongitude")
+    capture_raw = (
+        raw_exif.get("EXIF:DateTimeOriginal")
+        or raw_exif.get("DateTimeOriginal")
+        or raw_exif.get("EXIF:CreateDate")
+        or raw_exif.get("DateTimeDigitized")
+        or raw_exif.get("DateTime", "")
+    )
+    gps_lat = raw_exif.get("EXIF:GPSLatitude") if "EXIF:GPSLatitude" in raw_exif else raw_exif.get("GPSLatitude")
+    gps_lon = raw_exif.get("EXIF:GPSLongitude") if "EXIF:GPSLongitude" in raw_exif else raw_exif.get("GPSLongitude")
 
     has_camera_info = bool(camera_make or camera_model or capture_raw)
     has_discrepancy, notes, ai_metadata_detected, ai_markers = _analyze_discrepancies(
@@ -294,9 +387,9 @@ def extract_exif(image_path: str) -> dict:
     
     return {
         "raw_exif": raw_exif,
-        "camera_make": str(camera_make)[:100],
-        "camera_model": str(camera_model)[:100],
-        "software_tag": str(software_tag)[:150],
+        "camera_make": str(camera_make).strip()[:100],
+        "camera_model": str(camera_model).strip()[:100],
+        "software_tag": str(software_tag).strip()[:150],
         "capture_timestamp": _parse_exif_datetime(capture_raw),
         "gps_latitude": float(gps_lat) if isinstance(gps_lat, (int, float)) else None,
         "gps_longitude": float(gps_lon) if isinstance(gps_lon, (int, float)) else None,

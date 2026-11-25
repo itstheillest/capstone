@@ -1,0 +1,47 @@
+# Git & IDE caches
+.git/
+.gitignore
+.vscode/
+.idea/
+.vs/
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / Python caches
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Secrets & environment files (CRITICAL)
+.env
+.env.*
+!.env.example
+pixifai-4ea9b6136cf4.json
+*.pem
+*.key
+
+# Django local DB, media & static artifacts
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Local dumps, backups & docs not needed at runtime
+repomix-output.xml
+*.before-supabase
+pixifai-data.json
+AGENTS.md
+
+# Evaluation scripts, test datasets & CSV outputs
+tools/
+testset/
+test_set2/
+ph_testset*/
+ph_archive*/
+*.csv

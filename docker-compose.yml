@@ -24,6 +24,7 @@ services:
 
   web:
     build: .
+    image: pixifai-app:latest
     env_file:
       - .env
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000 --noreload"
@@ -49,7 +50,8 @@ services:
         condition: service_started
 
   celery:
-    build: .
+    image: pixifai-app:latest
+    pull_policy: never
     env_file:
       - .env
     command: celery -A pixifai worker -l info --concurrency=2
@@ -74,3 +76,4 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+

@@ -1,9 +1,8 @@
-import os
-import time
 import logging
+from datetime import timedelta
 
 from django.contrib.auth import get_user_model
-from django.conf import settings
+from django.utils import timezone
 from celery import shared_task
 
 from audit.models import AuditLog
@@ -12,6 +11,41 @@ from detection.pipeline import process_submission, retry_fact_check_lookup
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+def discard_submission_image(submission):
+    """
+    Delete the uploaded source image and clear its database file reference.
+    Keep the ImageSubmission and its analysis records.
+    """
+    if not submission.image or not submission.image.name:
+        return
+
+    submission.image.delete(save=False)
+    submission.image = ""
+    submission.save(update_fields=["image"])
+
+
+@shared_task
+def cleanup_old_media_files(max_age_seconds=86400):
+    """Back up immediate cleanup for old completed or failed submissions."""
+    cutoff = timezone.now() - timedelta(seconds=max_age_seconds)
+    old_submissions = ImageSubmission.objects.filter(
+        submitted_at__lt=cutoff,
+        status__in=[
+            ImageSubmission.Status.COMPLETED,
+            ImageSubmission.Status.FAILED,
+        ],
+    ).exclude(image="")
+
+    for submission in old_submissions.iterator():
+        try:
+            discard_submission_image(submission)
+        except Exception:
+            logger.exception(
+                "Could not clean old image for submission %s.",
+                submission.id,
+            )
+
 
 @shared_task
 def retry_fact_check_task(submission_id: str):
@@ -43,36 +77,51 @@ def retry_fact_check_task(submission_id: str):
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=15)
 def process_submission_task(self, submission_id: str, actor_id: str | None = None):
-    """
-    Async Celery task to process an ImageSubmission end-to-end.
-    Delegates all analysis (EXIF, Face, Forensic, Tags, Legal, Fact Check)
-    to detection.pipeline.process_submission.
-    """
     actor = None
     if actor_id:
         try:
             actor = User.objects.get(id=actor_id)
         except User.DoesNotExist:
-            logger.warning(f"Actor with ID {actor_id} not found for task execution.")
+            logger.warning("Actor with ID %s not found for task execution.", actor_id)
 
     try:
+        # This runs all steps that need the image file.
         submission = process_submission(submission_id, actor=actor)
-        return str(submission.id)
-    except Exception as exc:
-        logger.exception(f"Error executing process_submission_task for {submission_id}: {exc}")
-        raise self.retry(exc=exc)
-    
-@shared_task
-def cleanup_old_media_files(max_age_seconds=86400):
-    """Deletes uploaded media files older than max_age_seconds (default 24h)."""
-    now = time.time()
-    media_dir = settings.MEDIA_ROOT
 
-    for root, _, files in os.walk(media_dir):
-        for file in files:
-            file_path = os.path.join(root, file)
-            if os.path.getmtime(file_path) < (now - max_age_seconds):
+    except Exception as exc:
+        logger.exception(
+            "Error executing process_submission_task for %s.",
+            submission_id,
+        )
+
+        # Keep the image available while Celery may still retry.
+        # On the final failed attempt, remove it.
+        if self.request.retries >= self.max_retries:
+            failed_submission = ImageSubmission.objects.filter(
+                pk=submission_id
+            ).first()
+
+            if failed_submission:
                 try:
-                    os.remove(file_path)
-                except OSError as e:
-                    logger.error(f"Failed deleting old media file {file_path}: {e}")
+                    discard_submission_image(failed_submission)
+                except Exception:
+                    logger.exception(
+                        "Could not delete uploaded image for failed submission %s.",
+                        submission_id,
+                    )
+
+            raise
+
+        raise self.retry(exc=exc)
+
+    # Processing succeeded; now it is safe to remove the source image.
+    try:
+        discard_submission_image(submission)
+    except Exception:
+        # The cleanup task below is a backup in case immediate deletion fails.
+        logger.exception(
+            "Analysis completed, but uploaded image cleanup failed for %s.",
+            submission_id,
+        )
+
+    return str(submission.id)

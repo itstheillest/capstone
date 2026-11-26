@@ -87,6 +87,20 @@ services:
       redis:
         condition: service_healthy
 
+  celery-beat:
+    image: pixifai-app:latest
+    pull_policy: never
+    restart: unless-stopped
+    env_file:
+        - .env
+    command: celery -A pixifai beat -l info
+    environment:
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:

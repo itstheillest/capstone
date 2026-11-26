@@ -2,7 +2,6 @@ import hashlib
 from rest_framework import serializers, status, viewsets
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
-from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema, inline_serializer
 from django.db import transaction
@@ -54,10 +53,24 @@ class ImageSubmissionViewSet(viewsets.ModelViewSet):
         actor_id = str(actor.id) if actor else None
 
         existing = self.get_queryset().filter(sha256_hash=sha256_hash).first()
+
         if existing:
             if existing.status == ImageSubmission.Status.FAILED:
-                process_submission_task.delay(str(existing.id), actor_id=actor_id)
-                existing.refresh_from_db()
+                # The previous attempt may have deleted its temporary image.
+                # Reattach the file the user just uploaded.
+                existing.image.save(
+                    uploaded_file.name,
+                    uploaded_file,
+                    save=False,
+                )
+                existing.status = ImageSubmission.Status.PENDING
+                existing.save(update_fields=["image", "status"])
+
+                process_submission_task.delay(
+                    str(existing.id),
+                    actor_id=actor_id,
+                )
+
             serializer = self.get_serializer(existing)
             return Response(
                 {"message": "Image already analyzed.", "data": serializer.data},

@@ -327,11 +327,14 @@ def process_fact_checking_layer(
 
 def _replace_fact_check_references(submission, references):
     unique_references = {}
+    
     for reference in references:
         publisher_url = reference.get("publisher_url", "")
         if publisher_url.startswith(("https://", "http://")):
             unique_references[(publisher_url, reference.get("claim_text", ""))] = reference
 
+    rating=(reference.get("rating") or "Unrated").strip()[:100],
+    
     with transaction.atomic():
         FactCheckReference.objects.filter(submission=submission).delete()
         FactCheckReference.objects.bulk_create([

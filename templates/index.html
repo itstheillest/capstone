@@ -233,6 +233,9 @@
                 </span>
               </div>
             </div>
+            <p id="res-image-unavailable" class="hidden text-sm text-zinc-500">
+              The original image is no longer available. The analysis results are still saved.
+            </p>
 
             <!-- Submission Provenance Box -->
             <div class="border border-zinc-200 rounded-xl px-4 py-3 bg-zinc-50 space-y-1.5 text-xs">
@@ -399,12 +402,20 @@
     ]);
     let currentData = null;
     let activePollTimer = null;
+    let activePreviewUrl = null;
 
     const fileInput = document.getElementById('file-input');
     const browseBtn = document.getElementById('browse-btn');
     const mockFrame = document.getElementById('mock-file-frame');
     const dropZone = document.getElementById('drop-zone');
     const chosenFileLabel = document.getElementById('chosen-file-label');
+
+    function releaseActivePreview() {
+      if (activePreviewUrl) {
+        URL.revokeObjectURL(activePreviewUrl);
+        activePreviewUrl = null;
+      }
+    }
 
     function escapeHtml(value) {
       return String(value ?? '')
@@ -577,6 +588,9 @@
       document.getElementById('results-panel').classList.add('hidden');
       document.getElementById('processing-panel').classList.add('hidden');
       document.getElementById('upload-panel').classList.remove('hidden');
+      releaseActivePreview();
+      document.getElementById('proc-preview-img').removeAttribute('src');
+      document.getElementById('res-image').removeAttribute('src');
       fileInput.value = '';
       chosenFileLabel.innerText = 'No file chosen';
     }
@@ -594,7 +608,10 @@
 
       setPipelineProgress(25, 'Uploading image & running EXIF extraction... 25%');
       document.getElementById('proc-filename-display').innerText = `${file.name} | ${formatBytes(file.size)}`;
-      document.getElementById('proc-preview-img').src = URL.createObjectURL(file);
+      releaseActivePreview();
+      activePreviewUrl = URL.createObjectURL(file);
+
+      document.getElementById('proc-preview-img').src = activePreviewUrl;
 
       const term = document.getElementById('log-terminal');
       term.innerHTML = '<div>[INFO] Initializing PixifAI Analysis Layer...</div>';
@@ -626,7 +643,7 @@
         if (res.status === 200 && data.message === 'Image already analyzed.' && data.data) {
           setPipelineProgress(100, 'Loaded cached SHA-256 analysis... 100%');
           appendLog('[SUCCESS] SHA-256 hash match found in database. Loading cached forensic report.');
-          setTimeout(() => showResults(data.data), 250);
+          setTimeout(() => showResults(data.data, activePreviewUrl), 250);
           return;
         }
 
@@ -640,7 +657,7 @@
         if (data.status === 'completed') {
           setPipelineProgress(100, 'Processing modules... 100% completed.');
           appendLog('[SUCCESS] All 6 forensic, legal mapping, and web intelligence layers completed.');
-          setTimeout(() => showResults(data), 300);
+          setTimeout(() => showResults(data, activePreviewUrl), 300);
           return;
         }
 
@@ -692,7 +709,7 @@
             bar.style.width = '100%';
             label.innerText = 'Processing modules... 100% completed.';
             appendLog('[SUCCESS] All 6 forensic & legal pipeline layers completed.');
-            setTimeout(() => showResults(data), 400);
+            setTimeout(() => showResults(data, activePreviewUrl), 400);
           } else if (data.status === 'failed') {
             appendLog(`[ERROR] Analysis pipeline reported failure${data.error ? `: ${data.error}` : '.'}`);
           } else {
@@ -747,19 +764,39 @@
       });
     }
 
-    function showResults(data) {
+    function showResults(data, previewUrl = activePreviewUrl) {
       currentData = data;
       document.getElementById('processing-panel').classList.add('hidden');
       document.getElementById('results-panel').classList.remove('hidden');
 
-      // 1. Submission Metadata & Media Preview
       const faces = Array.isArray(data.faces) ? data.faces : [];
       const imgEl = document.getElementById('res-image');
       const overlayEl = document.getElementById('res-face-overlays');
+      const unavailableEl = document.getElementById('res-image-unavailable');
+
       overlayEl.innerHTML = '';
       imgEl.onload = () => renderFaceOverlays(faces);
-      imgEl.src = data.image || '';
-      if (imgEl.complete) renderFaceOverlays(faces);
+      imgEl.onerror = () => {
+        imgEl.classList.add('hidden');
+        unavailableEl.classList.remove('hidden');
+      };
+
+      // Prefer the browser's temporary preview. The API image URL may be empty
+      // because the server copy has been deleted.
+      const displayUrl = previewUrl || data.image || '';
+      if (displayUrl) {
+        imgEl.classList.remove('hidden');
+        unavailableEl.classList.add('hidden');
+        imgEl.src = displayUrl;
+      } else {
+        imgEl.removeAttribute('src');
+        imgEl.classList.add('hidden');
+        unavailableEl.classList.remove('hidden');
+      }
+
+      if (imgEl.complete && imgEl.naturalWidth) {
+        renderFaceOverlays(faces);
+      }
 
       document.getElementById('res-filename').innerText = `${data.original_filename || 'Uploaded Image'} | ${formatBytes(data.file_size_bytes)}`;
       document.getElementById('res-status-badge').innerText = String(data.status || 'unknown').toUpperCase();
@@ -804,21 +841,6 @@
         softwareStatusEl.className = 'text-zinc-600 font-medium';
         softwareStatusEl.innerText = 'Software Signature: None Recorded';
         cameraStatusEl.innerText = 'Camera Hardware: None / Stripped';
-      } else if (exif.has_discrepancy) {
-        sourceStatusEl.className = 'text-red-600 font-medium';
-        sourceStatusEl.innerText = `Source Status: ${exif.discrepancy_notes || 'Modified / No Original Camera EXIF'}`;
-      } else {
-        sourceStatusEl.className = 'text-emerald-700 font-medium';
-        sourceStatusEl.innerText = 'Camera Metadata Present';
-      }
-
-      if (exif && exif.software_tag) {
-        softwareStatusEl.className = exif.has_discrepancy ? 'text-red-600 font-medium' : 'text-zinc-800 font-medium';
-        softwareStatusEl.innerText = `Software Signature: ${exif.software_tag}`;
-      } else {
-        softwareStatusEl.className = 'text-zinc-600 font-medium';
-        softwareStatusEl.innerText = 'Software Signature: None Recorded';
-        cameraStatusEl.innerText = 'Camera Hardware: None / Stripped';
         captureTsEl.innerText = 'Not Recorded';
         gpsCoordsEl.innerText = 'No GPS Embedded';
         rawExifSummaryEl.innerText = 'Raw EXIF Dictionary (0 keys)';
@@ -826,14 +848,17 @@
       } else {
         if (exif.has_discrepancy) {
           sourceStatusEl.className = 'text-red-600 font-medium';
-          sourceStatusEl.innerText = `Source Status: ${exif.discrepancy_notes || 'EXIF discrepancy flagged'}`;
+          sourceStatusEl.innerText =
+            `Source Status: ${exif.discrepancy_notes || 'EXIF discrepancy flagged'}`;
         } else {
           sourceStatusEl.className = 'text-emerald-700 font-medium';
           sourceStatusEl.innerText = 'Source Status: Verified Camera Metadata Present';
         }
 
         if (exif.software_tag) {
-          softwareStatusEl.className = exif.has_discrepancy ? 'text-red-600 font-medium' : 'text-zinc-800 font-medium';
+          softwareStatusEl.className = exif.has_discrepancy
+            ? 'text-red-600 font-medium'
+            : 'text-zinc-800 font-medium';
           softwareStatusEl.innerText = `Software Signature: ${exif.software_tag}`;
         } else {
           softwareStatusEl.className = 'text-zinc-600 font-medium';
@@ -842,14 +867,22 @@
 
         const camString = [exif.camera_make, exif.camera_model].filter(Boolean).join(' ');
         cameraStatusEl.innerText = `Camera Hardware: ${camString || 'None / Stripped'}`;
-        captureTsEl.innerText = exif.capture_timestamp ? formatTimestamp(exif.capture_timestamp) : 'Not Recorded';
+        captureTsEl.innerText = exif.capture_timestamp
+          ? formatTimestamp(exif.capture_timestamp)
+          : 'Not Recorded';
 
-        const hasGps = typeof exif.gps_latitude === 'number' && typeof exif.gps_longitude === 'number';
-        gpsCoordsEl.innerText = hasGps ? `${exif.gps_latitude.toFixed(5)}, ${exif.gps_longitude.toFixed(5)}` : 'No GPS Embedded';
+        const hasGps = typeof exif.gps_latitude === 'number'
+          && typeof exif.gps_longitude === 'number';
+        gpsCoordsEl.innerText = hasGps
+          ? `${exif.gps_latitude.toFixed(5)}, ${exif.gps_longitude.toFixed(5)}`
+          : 'No GPS Embedded';
 
-        const rawObj = exif.raw_exif && typeof exif.raw_exif === 'object' ? exif.raw_exif : {};
+        const rawObj = exif.raw_exif && typeof exif.raw_exif === 'object'
+          ? exif.raw_exif
+          : {};
         const keyCount = Object.keys(rawObj).length;
-        rawExifSummaryEl.innerText = `Raw EXIF Dictionary (${keyCount} key${keyCount === 1 ? '' : 's'})`;
+        rawExifSummaryEl.innerText =
+          `Raw EXIF Dictionary (${keyCount} key${keyCount === 1 ? '' : 's'})`;
         rawExifPreEl.innerText = JSON.stringify(rawObj, null, 2);
       }
 
@@ -881,7 +914,7 @@
           ? 'AI probability'
           : 'Manipulation score';
 
-      scoreEl.innerText = `${scoreLabel}: ${score.toFixed(1)}%`;
+      scoreEl.innerText = `${scoreLabel}: ${scorePct}`;
       reviewStatusEl.innerText = report ? formatReviewStatus(report.review_status) : 'Pending Report';
       modelInfoEl.innerText = forensic
         ? `Engine: ${forensic.model_name} (${forensic.model_version})`
@@ -1176,7 +1209,7 @@
               return;
             }
 
-            showResults(updatedData);
+            showResults(updatedData, activePreviewUrl);
           } catch (error) {
             statusEl.textContent = `Could not refresh status: ${error.message}`;
             button.disabled = false;
@@ -1199,6 +1232,7 @@
       chosenFileLabel.innerText = 'No file chosen';
     };
     document.getElementById('proc-cancel-btn').onclick = resetToUpload;
+    window.addEventListener('pagehide', releaseActivePreview);
 
     document.getElementById('export-json-btn').onclick = () => {
       if (!currentData) return;
